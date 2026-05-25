@@ -11,7 +11,8 @@ public record RetryPolicy(
         Duration maxDelay,
         double backoffMultiplier,
         double jitterFactor,
-        Predicate<Throwable> retryOn) {
+        Predicate<Throwable> retryOn,
+        FailureClassifier classifier) {
 
     public RetryPolicy {
         if (maxAttempts < 1) {
@@ -20,6 +21,7 @@ public record RetryPolicy(
         Objects.requireNonNull(baseDelay, "baseDelay");
         Objects.requireNonNull(maxDelay, "maxDelay");
         Objects.requireNonNull(retryOn, "retryOn");
+        Objects.requireNonNull(classifier, "classifier");
         if (baseDelay.isNegative() || maxDelay.isNegative()) {
             throw new IllegalArgumentException("delays must be non-negative");
         }
@@ -34,19 +36,58 @@ public record RetryPolicy(
         }
     }
 
+    /**
+     * Backward-compatible six-argument constructor — delegates with
+     * {@link FailureClassifier#defaults()}.
+     */
+    public RetryPolicy(int maxAttempts, Duration baseDelay, Duration maxDelay,
+                       double backoffMultiplier, double jitterFactor,
+                       Predicate<Throwable> retryOn) {
+        this(maxAttempts, baseDelay, maxDelay, backoffMultiplier, jitterFactor, retryOn,
+                FailureClassifier.defaults());
+    }
+
     public static RetryPolicy none() {
         return new RetryPolicy(1, Duration.ZERO, Duration.ZERO, 1.0, 0.0,
-                RetryPredicates.never());
+                RetryPredicates.never(), FailureClassifier.defaults());
     }
 
     public static RetryPolicy once() {
         return new RetryPolicy(2, Duration.ZERO, Duration.ZERO, 1.0, 0.0,
-                RetryPredicates.always());
+                RetryPredicates.always(), FailureClassifier.defaults());
     }
 
     public static RetryPolicy exponential(int maxAttempts, Duration baseDelay) {
         return new RetryPolicy(maxAttempts, baseDelay, baseDelay.multipliedBy(32),
-                2.0, 0.2, RetryPredicates.transientIo());
+                2.0, 0.2, RetryPredicates.transientIo(), FailureClassifier.defaults());
+    }
+
+    /**
+     * Classify a failure using this policy's {@link FailureClassifier},
+     * combined with the legacy {@link #retryOn() retryOn} predicate.
+     *
+     * <p>The classifier is consulted first. If it returns {@code null}
+     * (declines to decide), the {@code retryOn} predicate is used as a
+     * fallback: {@code true} → {@link FailureCategory#TRANSIENT},
+     * {@code false} → {@link FailureCategory#PERMANENT}. This keeps callers
+     * that only set {@code retryOn} working unchanged while letting new
+     * callers use the richer classifier API.
+     */
+    public FailureClassification classify(Throwable cause) {
+        FailureClassification c = classifier.classify(cause);
+        if (c != null) {
+            return c;
+        }
+        return retryOn.test(cause)
+                ? FailureClassification.transientFailure()
+                : FailureClassification.permanent();
+    }
+
+    /** Returns a copy of this policy with the given classifier installed. */
+    public RetryPolicy withClassifier(FailureClassifier other) {
+        Objects.requireNonNull(other, "classifier");
+        return new RetryPolicy(maxAttempts, baseDelay, maxDelay,
+                backoffMultiplier, jitterFactor, retryOn, other);
     }
 
     public long computeDelayMs(int attemptNumber) {
