@@ -52,7 +52,7 @@
              inherit spring-boot-starter-parent), version-property overrides
              do not apply — they must be pinned explicitly in
              dependencyManagement, ahead of the BOM import, so they win. -->
-        <jackson-bom.override.version>2.18.6</jackson-bom.override.version>
+        <jackson-bom.override.version>2.21.3</jackson-bom.override.version>
         <logback.override.version>1.5.32</logback.override.version>
         <xmlunit.override.version>2.10.0</xmlunit.override.version>
         <!-- Web stack: pulled in by the playground (web app) and samples.
