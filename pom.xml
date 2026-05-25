@@ -41,7 +41,7 @@
 
         <spring-boot.version>4.0.6</spring-boot.version>
         <spring-ai.version>1.1.7</spring-ai.version>
-        <resilience4j.version>2.2.0</resilience4j.version>
+        <resilience4j.version>2.4.0</resilience4j.version>
 
         <junit.version>5.10.2</junit.version>
         <assertj.version>3.27.7</assertj.version>
@@ -52,9 +52,9 @@
              inherit spring-boot-starter-parent), version-property overrides
              do not apply — they must be pinned explicitly in
              dependencyManagement, ahead of the BOM import, so they win. -->
-        <jackson-bom.override.version>2.18.6</jackson-bom.override.version>
+        <jackson-bom.override.version>2.21.3</jackson-bom.override.version>
         <logback.override.version>1.5.32</logback.override.version>
-        <xmlunit.override.version>2.10.0</xmlunit.override.version>
+        <xmlunit.override.version>2.11.0</xmlunit.override.version>
         <!-- Web stack: pulled in by the playground (web app) and samples.
              Boot 3.3.x pins older tomcat/thymeleaf than the latest CVE fixes. -->
         <tomcat.override.version>11.0.22</tomcat.override.version>
@@ -205,17 +205,17 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.13.0</version>
+                    <version>3.15.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.2.5</version>
+                    <version>3.5.5</version>
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.12</version>
+                    <version>0.8.14</version>
                 </plugin>
             </plugins>
         </pluginManagement>
