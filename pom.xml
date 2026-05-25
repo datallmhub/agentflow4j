@@ -61,7 +61,7 @@
         <thymeleaf.override.version>3.1.5.RELEASE</thymeleaf.override.version>
         <!-- Spring Framework: Boot 3.4.13 pins 6.2.15; bump to 6.2.18 to clear
              the spring-webmvc / spring-webflux advisories (fixed in 6.2.18). -->
-        <spring-framework.override.version>6.2.18</spring-framework.override.version>
+        <spring-framework.override.version>7.0.7</spring-framework.override.version>
     </properties>
 
     <dependencyManagement>
