@@ -45,6 +45,22 @@ public interface BudgetPolicy {
     double spent(Scope scope, String nodeName);
 
     /**
+     * Returns the budget remaining at {@code scope} for {@code nodeName}, in
+     * the meter's unit — {@code Double.POSITIVE_INFINITY} when the scope is
+     * unbounded. {@code nodeName} is only consulted for {@link Scope#NODE}.
+     *
+     * <p>Used by routing strategies (e.g. {@code BudgetAwareRouter}) to take
+     * deterministic, cost-aware decisions before invoking the next agent.
+     *
+     * <p>The default implementation returns {@code POSITIVE_INFINITY} so
+     * custom {@link BudgetPolicy} impls stay source-compatible without having
+     * to expose limits.
+     */
+    default double remaining(Scope scope, String nodeName) {
+        return Double.POSITIVE_INFINITY;
+    }
+
+    /**
      * No-op policy. Every call is allowed and no counters are kept.
      * Useful as the default when no budget has been wired.
      */
@@ -59,6 +75,10 @@ public interface BudgetPolicy {
         @Override
         public double spent(Scope scope, String nodeName) {
             return 0.0;
+        }
+        @Override
+        public double remaining(Scope scope, String nodeName) {
+            return Double.POSITIVE_INFINITY;
         }
     };
 

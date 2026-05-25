@@ -73,6 +73,20 @@ public final class HierarchicalBudgetPolicy implements BudgetPolicy {
         };
     }
 
+    @Override
+    public double remaining(Scope scope, String nodeName) {
+        double limit = switch (scope) {
+            case RUN  -> limits.perRun();
+            case NODE -> limits.perNode();
+            case CALL -> limits.perCall();
+        };
+        if (Double.isInfinite(limit)) {
+            return Double.POSITIVE_INFINITY;
+        }
+        double left = limit - spent(scope, nodeName);
+        return left < 0.0 ? 0.0 : left;
+    }
+
     public BudgetLimits limits() {
         return limits;
     }

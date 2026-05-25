@@ -4,6 +4,7 @@ import java.util.Set;
 
 import io.github.datallmhub.agentflow4j.core.Agent;
 import io.github.datallmhub.agentflow4j.core.AgentContext;
+import io.github.datallmhub.agentflow4j.graph.BudgetPolicy;
 import org.springframework.ai.chat.client.ChatClient;
 
 @FunctionalInterface
@@ -31,6 +32,20 @@ public interface RoutingStrategy {
 
     static RoutingStrategy llmDriven(ChatClient chatClient) {
         return new LlmRoutingStrategy(chatClient);
+    }
+
+    /**
+     * Deterministic, cost-aware routing: send work to {@code premium} while
+     * the remaining budget at {@code scope} is {@code >= threshold}, and
+     * switch to {@code fallback} once it drops below. See
+     * {@link BudgetAwareRouter} for the full rationale and wiring.
+     */
+    static RoutingStrategy budgetAware(BudgetPolicy budget,
+                                       BudgetPolicy.Scope scope,
+                                       double threshold,
+                                       String premium,
+                                       String fallback) {
+        return new BudgetAwareRouter(budget, scope, threshold, premium, fallback);
     }
 
     /**
