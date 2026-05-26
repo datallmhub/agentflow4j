@@ -31,7 +31,7 @@ AgentFlow4J is distributed via [JitPack](https://jitpack.io/#datallmhub/agentflo
     <dependency>
         <groupId>com.github.datallmhub.agentflow4j</groupId>
         <artifactId>agentflow4j-starter</artifactId>
-        <version>v0.6.0</version>
+        <version>v0.7.0</version>
     </dependency>
     ```
 
@@ -41,7 +41,7 @@ AgentFlow4J is distributed via [JitPack](https://jitpack.io/#datallmhub/agentflo
     repositories { maven { url 'https://jitpack.io' } }
 
     dependencies {
-        implementation 'com.github.datallmhub.agentflow4j:agentflow4j-starter:v0.6.0'
+        implementation 'com.github.datallmhub.agentflow4j:agentflow4j-starter:v0.7.0'
     }
     ```
 

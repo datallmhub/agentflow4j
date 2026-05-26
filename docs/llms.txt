@@ -45,5 +45,5 @@ License: Apache 2.0. Package: `com.github.datallmhub.agentflow4j:agentflow4j-sta
 ## Source & install
 
 - Repository: [github.com/datallmhub/agentflow4j](https://github.com/datallmhub/agentflow4j)
-- Maven (JitPack): `com.github.datallmhub.agentflow4j:agentflow4j-starter:v0.6.0`
+- Maven (JitPack): `com.github.datallmhub.agentflow4j:agentflow4j-starter:v0.7.0`
 - Modules: `agentflow4j-core`, `agentflow4j-graph`, `agentflow4j-squad`, `agentflow4j-checkpoint`, `agentflow4j-resilience4j`, `agentflow4j-starter`, `agentflow4j-playground`, `agentflow4j-cli-agents`, `agentflow4j-test`, `agentflow4j-samples`

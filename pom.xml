@@ -7,7 +7,7 @@
 
     <groupId>io.github.datallmhub</groupId>
     <artifactId>agentflow4j-parent</artifactId>
-    <version>0.6.0</version>
+    <version>0.7.0</version>
     <packaging>pom</packaging>
 
     <name>AgentFlow4J</name>
