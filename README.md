@@ -144,7 +144,7 @@ Distributed via [JitPack](https://jitpack.io).
 <dependency>
     <groupId>com.github.datallmhub.agentflow4j</groupId>
     <artifactId>agentflow4j-starter</artifactId>
-    <version>v0.6.0</version>
+    <version>v0.7.0</version>
 </dependency>
 ```
 
@@ -152,7 +152,7 @@ Distributed via [JitPack](https://jitpack.io).
 
 ```groovy
 repositories { maven { url 'https://jitpack.io' } }
-dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-starter:v0.6.0' }
+dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-starter:v0.7.0' }
 ```
 
 ### Modules

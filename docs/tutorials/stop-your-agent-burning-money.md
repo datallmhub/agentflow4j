@@ -23,7 +23,7 @@ We'll build a customer-support agent that can issue refunds, then lock it down s
 <dependency>
     <groupId>com.github.datallmhub.agentflow4j</groupId>
     <artifactId>agentflow4j-starter</artifactId>
-    <version>v0.6.0</version>
+    <version>v0.7.0</version>
 </dependency>
 ```
 

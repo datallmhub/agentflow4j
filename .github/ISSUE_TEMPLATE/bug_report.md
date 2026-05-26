@@ -12,7 +12,7 @@ Describe the bug clearly and concisely.
 
 ## Version
 
-- AgentFlow4J version: <!-- e.g. v0.6.0 -->
+- AgentFlow4J version: <!-- e.g. v0.7.0 -->
 - Java version: <!-- Java 17+ -->
 - Maven version:
 - Spring Boot version: <!-- Spring Boot 3.x -->
