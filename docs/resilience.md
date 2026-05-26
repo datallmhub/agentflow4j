@@ -10,13 +10,80 @@ LLM-based workflows are inherently non-deterministic. Network failures, rate lim
 
 ## 1. Automatic Retries
 
-You can configure retries at the agent level or the graph level.
+Retries are configured on the **graph**, either as a default for every node or
+per-node when one step needs a different policy. `RetryPolicy.exponential` gives
+you capped exponential backoff with jitter.
 
 ```java
-ExecutorAgent agent = ExecutorAgent.builder()
-    .retryPolicy(RetryPolicy.exponentialBackoff(3)) // Retry 3 times with backoff
+import java.time.Duration;
+
+AgentGraph graph = AgentGraph.builder()
+    // default for every node: 3 attempts, 1s base delay, x2 backoff
+    .retryPolicy(RetryPolicy.exponential(3, Duration.ofSeconds(1)))
+    .addNode("research", researchAgent)
+    // per-node override: this flaky step gets 5 attempts
+    .addNode("write", writerAgent, RetryPolicy.exponential(5, Duration.ofMillis(500)))
+    .addEdge("research", "write")
     .build();
 ```
+
+The built-in factories are `RetryPolicy.none()` (no retry), `RetryPolicy.once()`
+(one extra attempt, no delay), and `RetryPolicy.exponential(maxAttempts, baseDelay)`.
+The check runs **before every attempt, including retries**.
+
+### Reason-aware retries
+
+Blindly retrying every failure wastes time and money: a `400 Bad Request` will
+fail identically on the next attempt, while a `429 Too Many Requests` often tells
+you *exactly* how long to wait via its `Retry-After` header. A `RetryPolicy`
+carries a `FailureClassifier` that sorts each failure into one of three
+categories:
+
+| `FailureCategory` | What the graph does                                                       |
+| ----------------- | ------------------------------------------------------------------------- |
+| `TRANSIENT`       | Retry. If the failure carries a `Retry-After` hint, that delay is honoured **instead of** the computed backoff. |
+| `PERMANENT`       | Stop immediately — no further attempts, the error is returned as-is.      |
+| `OVER_BUDGET`     | Stop and surface an `InterruptRequest` (see [Budget Policy](#6-budget-policy-cost-gate)) so a human can approve more budget and resume. |
+
+The **default** classifier (`FailureClassifier.defaults()`, installed on every
+policy unless you replace it) already recognises the common cases:
+
+- `IOException` / `TimeoutException` → `TRANSIENT`
+- Spring AI / Spring Web `5xx` and `429` → `TRANSIENT` (a `429`'s `Retry-After` is parsed and honoured)
+- other `4xx` → `PERMANENT`
+- `BudgetExceededException` → `OVER_BUDGET`
+
+Spring exceptions are detected by class name, so `agentflow4j-graph` keeps **zero
+compile-time Spring dependency**.
+
+#### Adding your own rules
+
+Classifiers compose: your classifier handles the failures it knows about and
+returns `null` for everything else, delegating to the default via `orElse`.
+
+```java
+FailureClassifier domainRules = cause -> {
+    if (cause instanceof QuotaExhaustedException) {
+        return FailureClassification.overBudget("monthly quota hit");
+    }
+    if (cause instanceof InvalidPromptException) {
+        return FailureClassification.permanent("prompt rejected by guardrail");
+    }
+    return null; // unknown — let the default classifier decide
+};
+
+RetryPolicy policy = RetryPolicy.exponential(3, Duration.ofSeconds(1))
+        .withClassifier(domainRules.orElse(FailureClassifier.defaults()));
+```
+
+`FailureClassification` exposes factories for each case —
+`transientFailure()`, `transientFailure(Duration retryAfter)`, `permanent()`,
+`permanent(String reason)`, and `overBudget(String reason)`. The optional
+`reason` is recorded in logs and the audit trail.
+
+> **Backward compatible:** the legacy `retryOn` predicate still works. When the
+> classifier returns `null`, the policy falls back to it — `true` → `TRANSIENT`,
+> `false` → `PERMANENT` — so existing policies keep their exact behaviour.
 
 ## 2. Structured Error Results
 
@@ -134,3 +201,45 @@ Need something simpler than dollars?
 - The default `BudgetPolicy` is `NOOP`. You only get cost protection after calling `.budgetPolicy(...)` on the builder.
 - The policy gates **before every attempt, including retries** — a flaky node will not silently chew through your run budget.
 - Counters live on the `BudgetPolicy` instance. Use a fresh instance per run (or per tenant) if you do not want spending to carry over.
+
+### Cost-aware routing (budget-aware router)
+
+A budget can do more than halt a run — it can *degrade gracefully*. The
+**budget-aware router** (in `agentflow4j-squad`) routes to a **premium** agent
+while there is budget left, then switches to a cheaper **fallback** agent once
+the remaining budget at a chosen scope drops below a threshold. So instead of
+stopping dead at the limit, the squad keeps answering on a budget model.
+
+This is the one cost-aware routing lever that is both **deterministic** and
+**provably cheaper**: classifying request complexity ex-ante with an LLM would
+itself cost a call (chicken-and-egg), whereas reading the live `BudgetPolicy`
+counters is free.
+
+```java
+import io.github.datallmhub.agentflow4j.squad.RoutingStrategy;
+import io.github.datallmhub.agentflow4j.graph.BudgetPolicy;
+
+BudgetPolicy budget = BudgetPolicy.hierarchical(
+        BudgetLimits.builder().perRun(5.00).build(),
+        estimator, meter);
+
+// Use "premium" while >= $1.00 remains in the run budget, then "fallback".
+RoutingStrategy router = RoutingStrategy.budgetAware(
+        budget, BudgetPolicy.Scope.RUN, 1.00, "premium", "fallback");
+
+CoordinatorAgent coordinator = CoordinatorAgent.builder()
+        .executor("premium", premiumAgent)
+        .executor("fallback", fallbackAgent)
+        .routingStrategy(router)
+        .build();
+```
+
+The router and the graph **must share the same `BudgetPolicy` instance** so the
+router reads live spend. The decision is read from
+`BudgetPolicy.remaining(scope, nodeName)`: while `remaining >= threshold` it
+picks `premium`; once `remaining < threshold` (strictly less) it picks
+`fallback`. Both executors must be registered or `selectExecutor` throws.
+
+`remaining(...)` returns `Double.POSITIVE_INFINITY` for any unbounded scope (and
+for the `NOOP` policy), so a budget-aware router wired to an uncapped scope
+always stays on `premium` — fail-open, never silently cheap.
