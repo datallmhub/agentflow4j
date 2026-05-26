@@ -386,14 +386,36 @@ public final class AgentGraph implements Agent {
                 break;
             }
             AgentError err = result.error();
-            boolean canRetry = i < attempts - 1
-                    && err != null && err.cause() != null
-                    && policy.retryOn().test(err.cause());
-            if (!canRetry) {
+            if (err == null || err.cause() == null) {
                 break;
             }
-            long delay = policy.computeDelayMs(i + 1);
-            log.warn("Node '{}' failed during stream, retrying ({}/{}) after {}ms",
+            FailureClassification classification = policy.classify(err.cause());
+            if (classification.category() == FailureCategory.OVER_BUDGET) {
+                String reason = classification.reason() != null
+                        ? classification.reason()
+                        : "node '" + node.name() + "' signaled budget exhaustion";
+                log.warn("Node '{}' over-budget during stream, interrupting: {}",
+                        node.name(), reason);
+                result = AgentResult.interrupted(
+                        new InterruptRequest("budget.exceeded:" + node.name(), reason));
+                break;
+            }
+            boolean canRetry = i < attempts - 1
+                    && classification.category() == FailureCategory.TRANSIENT;
+            if (!canRetry) {
+                if (classification.category() == FailureCategory.PERMANENT) {
+                    log.warn("Node '{}' failed (PERMANENT), no retry: {}",
+                            node.name(),
+                            classification.reason() != null
+                                    ? classification.reason()
+                                    : err.cause().getClass().getSimpleName());
+                }
+                break;
+            }
+            long delay = classification.retryAfter() != null
+                    ? classification.retryAfter().toMillis()
+                    : policy.computeDelayMs(i + 1);
+            log.warn("Node '{}' failed during stream (TRANSIENT), retrying ({}/{}) after {}ms",
                     node.name(), i + 1, attempts - 1, delay);
             sleep(delay);
         }
@@ -453,14 +475,35 @@ public final class AgentGraph implements Agent {
                 break;
             }
             AgentError err = result.error();
-            boolean canRetry = i < attempts - 1
-                    && err != null && err.cause() != null
-                    && policy.retryOn().test(err.cause());
-            if (!canRetry) {
+            if (err == null || err.cause() == null) {
                 break;
             }
-            long delay = policy.computeDelayMs(i + 1);
-            log.warn("Node '{}' failed, retrying ({}/{}) after {}ms",
+            FailureClassification classification = policy.classify(err.cause());
+            if (classification.category() == FailureCategory.OVER_BUDGET) {
+                String reason = classification.reason() != null
+                        ? classification.reason()
+                        : "node '" + node.name() + "' signaled budget exhaustion";
+                log.warn("Node '{}' over-budget, interrupting: {}", node.name(), reason);
+                result = AgentResult.interrupted(
+                        new InterruptRequest("budget.exceeded:" + node.name(), reason));
+                break;
+            }
+            boolean canRetry = i < attempts - 1
+                    && classification.category() == FailureCategory.TRANSIENT;
+            if (!canRetry) {
+                if (classification.category() == FailureCategory.PERMANENT) {
+                    log.warn("Node '{}' failed (PERMANENT), no retry: {}",
+                            node.name(),
+                            classification.reason() != null
+                                    ? classification.reason()
+                                    : err.cause().getClass().getSimpleName());
+                }
+                break;
+            }
+            long delay = classification.retryAfter() != null
+                    ? classification.retryAfter().toMillis()
+                    : policy.computeDelayMs(i + 1);
+            log.warn("Node '{}' failed (TRANSIENT), retrying ({}/{}) after {}ms",
                     node.name(), i + 1, attempts - 1, delay);
             sleep(delay);
         }
