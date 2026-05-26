@@ -1,0 +1,42 @@
+name: release
+
+on:
+  push:
+    tags: [ 'v*' ]
+
+# Needs write to publish a GitHub Release (build.yml stays read-only).
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      # Gate the release on a green build of the exact tagged commit.
+      - name: Build and test
+        run: mvn -B verify
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          NOTES_FILE=".github/releases/${TAG}.md"
+          if [ -f "$NOTES_FILE" ]; then
+            # Reproduce the "v0.X.0 — Theme" title from the first '## ' heading.
+            THEME="$(grep -m1 '^## ' "$NOTES_FILE" | sed 's/^##[[:space:]]*//')"
+            TITLE="${TAG}${THEME:+ — ${THEME}}"
+            gh release create "$TAG" --verify-tag --title "$TITLE" --notes-file "$NOTES_FILE"
+          else
+            # No curated notes for this tag — fall back to auto-generated notes.
+            gh release create "$TAG" --verify-tag --title "$TAG" --generate-notes
+          fi
