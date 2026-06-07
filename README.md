@@ -109,28 +109,25 @@ LangGraph, ADK, CrewAI and AutoGen bring their own runtimes. AgentFlow4J runs on
 Agents are **not implicitly trusted**. Gate what they can call, what they can change, what they can spend, and when a human must step in — without writing governance glue:
 
 ```java
-// 1. restrict which tools an agent may call (gated on the executor)
 ExecutorAgent paymentAgent = ExecutorAgent.builder()
     .chatClient(chatClient)
     .tools(webSearch, shellTool)
     .toolPolicy(ToolPolicy.allowList("web.search").and(ToolPolicy.denyList("shell.execute")))
     .build();
 
-// state, cost and approval are gated on the graph
 AgentGraph.builder()
     .addNode("assistant", assistant)
     .addNode("payment.transfer", paymentAgent)
-    // 2. protect sensitive state keys from being written
     .statePolicy(StatePolicy.denyWriteKeys("payment.confirmed"))
-    // 3. cap spend per run / node / call
     .budgetPolicy(BudgetPolicy.hierarchical(BudgetLimits.run(2.00), estimator, meter))
-    // 4. pause for a human before high-stakes nodes
     .approvalGate(ApprovalGate.requireFor("payment.transfer"))
     .checkpointStore(store)
     .build();
 ```
 
-Each gate is opt-in with a zero-overhead default. See [Tool policy](docs/tool-policy.md), [State policy](docs/state-policy.md), [Approval gate](docs/approval-gate.md), and [Budget policy](docs/resilience.md#6-budget-policy-cost-gate).
+`ToolPolicy` allows `web.search` and blocks `shell.execute` on the agent. `StatePolicy` prevents any agent from writing `payment.confirmed` directly. `BudgetPolicy` caps the total run at $2.00. `ApprovalGate` pauses before `payment.transfer` executes — a human must approve. Each gate is opt-in with a zero-overhead default.
+
+See [Tool policy](docs/tool-policy.md), [State policy](docs/state-policy.md), [Approval gate](docs/approval-gate.md), [Budget policy](docs/resilience.md#6-budget-policy-cost-gate).
 
 ---
 
