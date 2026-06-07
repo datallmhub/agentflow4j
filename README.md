@@ -71,6 +71,8 @@ A multi-step, stateful workflow with routing, coordination, and resilience — w
 
 ## Why AgentFlow4J?
 
+**Spring AI helps you talk to AI models. AgentFlow4J helps AI agents work together safely in production.**
+
 No other agent framework combines these five dimensions in a single JVM-native runtime:
 
 | Dimension | What you get |
