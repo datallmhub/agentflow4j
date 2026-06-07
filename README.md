@@ -1,6 +1,6 @@
 # AgentFlow4J
 
-**Most agent frameworks help you build agents. AgentFlow4J helps you run them in production.** Security, authorization, governance, resilience, and FinOps — built into every workflow, JVM-native, Spring-powered.
+**Build multi-agent AI workflows in Java. Run them in production with security, governance, resilience, and FinOps — built into every execution, JVM-native, Spring-powered.**
 
 <p align="center">
 <img width="1536" height="768" alt="AgentFlow4J — Define · Compose · Execute with governance gates" src="docs/images/Agentflow4J.jpg" />

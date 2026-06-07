@@ -4,9 +4,9 @@ description: "Most agent frameworks help you build agents. AgentFlow4J helps you
 
 # AgentFlow4J
 
-**Most agent frameworks help you build agents. AgentFlow4J helps you run them in production.**
+**Build multi-agent AI workflows in Java. Run them in production with security, governance, resilience, and FinOps — built into every execution, JVM-native, Spring-powered.**
 
-Security, authorization, governance, resilience, and FinOps — built into every workflow, JVM-native, Spring-powered. Your existing Spring Security roles, Spring Data stores, Micrometer metrics, and Boot actuator endpoints are already wired into your agent graph. No new runtime to deploy, no new infrastructure to audit.
+Your existing Spring Security roles, Spring Data stores, Micrometer metrics, and Boot actuator endpoints are already wired into your agent graph. No new runtime to deploy, no new infrastructure to audit.
 
 [:material-rocket-launch: Get started](two-api-levels.md){ .md-button .md-button--primary }
 [:material-github: GitHub repo](https://github.com/datallmhub/agentflow4j){ .md-button }
