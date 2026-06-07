@@ -25,7 +25,7 @@ mvn install -DskipTests -q
 mvn -pl agentflow4j-samples exec:java
 ```
 
-Runs `SupportTriageDemo` by default — a ticket flowing through a governed graph: triage → specialist → policy gate → reply, with `ToolPolicy` and `ApprovalGate` active. No API key required; falls back to deterministic stubs, or calls Mistral when `MISTRAL_API_KEY` is set.
+Runs `SupportTriageDemo` by default — a **business example built with AgentFlow4J**: a support ticket flowing through a governed graph (triage → specialist → policy gate → reply), with `ToolPolicy` and `ApprovalGate` active. This is one sample use case to illustrate the framework, not the framework itself. No API key required; falls back to deterministic stubs, or calls Mistral when `MISTRAL_API_KEY` is set.
 
 Other demos to explore:
 
