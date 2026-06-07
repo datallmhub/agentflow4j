@@ -16,7 +16,7 @@ No orchestration boilerplate. No hidden execution. Just define your agents and r
 
 ---
         
-## 🚀 Try it in 30 seconds (no API key)
+## 🚀 Try it in 5 minutes (no API key)
 
 ```bash
 git clone https://github.com/datallmhub/agentflow4j.git
@@ -25,7 +25,22 @@ mvn install -DskipTests -q
 mvn -pl agentflow4j-samples exec:java
 ```
 
-Runs `SupportTriageDemo` — a customer-support ticket flowing through a graph: triage → specialist → policy gate → reply. Falls back to deterministic stubs offline, or calls Mistral when `MISTRAL_API_KEY` is set.
+Runs `SupportTriageDemo` by default — a ticket flowing through a governed graph: triage → specialist → policy gate → reply, with `ToolPolicy` and `ApprovalGate` active. No API key required; falls back to deterministic stubs, or calls Mistral when `MISTRAL_API_KEY` is set.
+
+Other demos to explore:
+
+| Demo | What it shows |
+|---|---|
+| `SupportTriageDemo` | Multi-agent graph with `ToolPolicy` + `ApprovalGate` |
+| `BudgetAwareRoutingDemo` | `BudgetPolicy` switching agents at runtime |
+| `ResearchSquad` | `ParallelAgent` fan-out + result aggregation |
+| `AdvancedGraphDemo` | Loops, conditions, typed state |
+| `MinimalPipeline` | Smallest possible `AgentGraph` — two nodes, one edge |
+
+```bash
+# Run any demo directly
+mvn -pl agentflow4j-samples exec:java -Dexec.mainClass=io.github.datallmhub.agentflow4j.samples.BudgetAwareRoutingDemo
+```
 
 ---
 
