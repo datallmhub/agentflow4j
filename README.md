@@ -200,10 +200,10 @@ dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-sta
 | Version | Status | Focus |
 |---------|--------|-------|
 | **0.5** | shipped | Subgraphs, parallel fan-out, cancellation, typed output, retry/circuit-breaker/budget policies, JDBC/Redis checkpoint store, web playground |
-| **0.6** | shipped | Governed execution: `ToolPolicy`, `StatePolicy`, `ApprovalGate` (allow/deny tools, guard state writes, human-in-the-loop pause/resume) |
-| **1.0** | planned | API stabilization, documentation, community feedback |
-| **1.1** | planned | Crew roles (CrewAI-inspired), auto-config for checkpoint backends |
-| **2.0** | exploring | OpenTelemetry tracing, MCP integration, Agent-as-Tool |
+| **0.6** | shipped | Governed execution: `ToolPolicy`, `StatePolicy`, `ApprovalGate` — allow/deny tools, guard state writes, human-in-the-loop pause/resume |
+| **0.7** | shipped | Adaptive execution: reason-aware retry (`FailureClassifier`), cost-aware routing (`BudgetAwareRouter`) |
+| **1.0** | in progress | API stabilization pass · lifecycle hooks (`onCheckpoint`, `onToolCall`, `onFailure`) · MCP compatibility · OpenHands integration adapter · Parallel-DAG execution |
+| **2.0** | exploring | Temporal-like interruption, compensation/saga, OpenTelemetry tracing |
 
 ---
 
