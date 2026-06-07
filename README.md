@@ -3,7 +3,7 @@
 **The only multi-agent orchestration runtime that brings enterprise-grade Spring to your AI workflows.** Security, authorization, governance, resilience, and FinOps — all first-class, all JVM-native, all wired into every agent execution.
 
 <p align="center">
-<img width="1536" height="1024" alt="agentflow4j-functions" src="https://github.com/user-attachments/assets/b81d8527-f99e-450c-a22b-28cbbb6b98dc" />
+<img width="1536" height="768" alt="AgentFlow4J — Define · Compose · Execute with governance gates" src="docs/images/Agentflow4J.jpg" />
 
 </p>
 
