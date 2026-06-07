@@ -59,26 +59,25 @@ One real workflow built with AgentFlow4J — a customer-support triage app. This
 ## ⚡ In 60 seconds
 
 ```java
-ExecutorAgent researcher = ExecutorAgent.builder()
-        .chatClient(chatClient)
-        .systemPrompt("Find key facts.")
-        .build();
+// Define your agents
+ExecutorAgent analyst = ExecutorAgent.builder()
+    .chatClient(chatClient)
+    .systemPrompt("Analyse this request.")
+    .toolPolicy(ToolPolicy.allowList("search", "fetch"))
+    .build();
 
-ExecutorAgent writer = ExecutorAgent.builder()
-        .chatClient(chatClient)
-        .systemPrompt("Write a clear report.")
-        .build();
+// Compose a governed graph
+AgentGraph graph = AgentGraph.builder()
+    .addNode("analyse", analyst)
+    .budgetPolicy(BudgetPolicy.perRun(0.50, estimator, meter))
+    .approvalGate(ApprovalGate.requireFor("analyse"))
+    .checkpointStore(new JdbcCheckpointStore(dataSource))
+    .build();
 
-CoordinatorAgent coordinator = CoordinatorAgent.builder()
-        .executors(Map.of("research", researcher, "writing", writer))
-        .routingStrategy(RoutingStrategy.llmDriven(chatClient))
-        .build();
-
-AgentResult result = coordinator.execute(
-        AgentContext.of("Compare Claude 4 and GPT-5"));
+AgentResult result = graph.run(AgentContext.of("Process this refund request"));
 ```
 
-A multi-step, stateful workflow with routing, coordination, and resilience — without writing orchestration code.
+`ToolPolicy` restricts which tools the agent can call. `BudgetPolicy` caps spend at $0.50 per run. `ApprovalGate` pauses execution until a human approves. `CheckpointStore` persists graph state — the run resumes from the last completed node after a restart.
 
 ⭐ **If this saves you time, consider [starring the repo](https://github.com/datallmhub/agentflow4j).**
 
