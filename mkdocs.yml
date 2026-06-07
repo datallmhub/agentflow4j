@@ -1,5 +1,5 @@
 site_name: AgentFlow4J
-site_description: Java/Spring runtime for governed multi-agent LLM workflows — orchestration, durable runs, runtime observability.
+site_description: Most agent frameworks help you build agents. AgentFlow4J helps you run them in production. Security, authorization, governance, resilience, and FinOps — built into every workflow, JVM-native, Spring-powered.
 site_url: https://datallmhub.github.io/agentflow4j/
 site_author: agentflow4j
 

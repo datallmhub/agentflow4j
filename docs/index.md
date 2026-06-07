@@ -1,12 +1,12 @@
 ---
-description: "AgentFlow4J — a Java/Spring runtime for governed, stateful multi-agent LLM workflows on top of Spring AI. Graph execution, durable runs, and built-in tool/state/budget/approval gates."
+description: "Most agent frameworks help you build agents. AgentFlow4J helps you run them in production. Security, authorization, governance, resilience, and FinOps — built into every Java and Spring AI workflow, JVM-native."
 ---
 
 # AgentFlow4J
 
-**Build governed, stateful multi-agent workflows in Java — orchestration, persistence, and runtime observability.**
+**Most agent frameworks help you build agents. AgentFlow4J helps you run them in production.**
 
-Spring AI gives you LLM primitives (`ChatClient`, tools). **AgentFlow4J gives you a structured runtime for multi-step systems.** Going from single prompts to multi-agent workflows makes execution stateful, failure-prone, and hard to inspect. AgentFlow4J provides the execution graph, durable state, and governance gates to run those workflows safely — all in idiomatic Java, no sidecar, no YAML.
+Security, authorization, governance, resilience, and FinOps — built into every workflow, JVM-native, Spring-powered. Your existing Spring Security roles, Spring Data stores, Micrometer metrics, and Boot actuator endpoints are already wired into your agent graph. No new runtime to deploy, no new infrastructure to audit.
 
 [:material-rocket-launch: Get started](two-api-levels.md){ .md-button .md-button--primary }
 [:material-github: GitHub repo](https://github.com/datallmhub/agentflow4j){ .md-button }
