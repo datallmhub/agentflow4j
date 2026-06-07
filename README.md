@@ -1,6 +1,6 @@
 # AgentFlow4J
 
-**Build governed, stateful multi-agent workflows in Java — orchestration, persistence, and runtime observability.**
+**The only multi-agent orchestration runtime that brings enterprise-grade Spring to your AI workflows.** Security, authorization, governance, resilience, and FinOps — all first-class, all JVM-native, all wired into every agent execution.
 
 <p align="center">
 <img width="1536" height="1024" alt="agentflow4j-functions" src="https://github.com/user-attachments/assets/b81d8527-f99e-450c-a22b-28cbbb6b98dc" />
@@ -69,21 +69,22 @@ A multi-step, stateful workflow with routing, coordination, and resilience — w
 
 ---
 
-## 🧠 Why AgentFlow4J?
+## Why AgentFlow4J?
 
-Spring AI gives you LLM primitives (`ChatClient`, tools). **AgentFlow4J gives you a structured runtime for multi-step systems.** Going from single prompts to multi-agent workflows makes execution stateful, failure-prone, and hard to inspect. AgentFlow4J provides the execution graph, durable state, and governance gates to run those workflows safely — all in idiomatic Java, no sidecar, no YAML.
+No other agent framework combines these five dimensions in a single JVM-native runtime:
 
-| Spring AI | AgentFlow4J runtime |
+| Dimension | What you get |
 |---|---|
-| Primitives (`ChatClient`, tools) | Structured execution (`AgentGraph`, `CoordinatorAgent`) |
-| Manual orchestration glue | Graph-based execution & dynamic routing |
-| No durable state | Typed shared state (`StateKey<T>`) + checkpoints |
-| Retry logic in user code | Built-in retry & circuit-breaker policies |
-| No resume | Interrupt & resume from the last valid checkpoint |
-| Agents fully trusted | Governed execution — tool, state-write and budget gates |
+| **Security & AuthZ** | Spring Security integration — your existing roles and permissions govern which agents can act |
+| **Governance** | `ApprovalGate`, `ToolPolicy`, `StatePolicy` — agents are not implicitly trusted |
+| **FinOps** | `BudgetPolicy` at RUN / NODE / CALL granularity + `BudgetAwareRouter` for cost-aware routing |
+| **Resilience** | `RetryPolicy` + `FailureClassifier` (TRANSIENT / PERMANENT / OVER_BUDGET) — typed, composable |
+| **Spring runtime** | Actuator, Micrometer, JPA, Flyway, `application.yml` — no new infrastructure to deploy or audit |
 
-**Use it if** your agent needs multiple LLM calls, your workflow has branches or loops, failures matter, or multiple agents must coordinate.
-**Skip it if** you just call `ChatClient` once.
+LangGraph, ADK, CrewAI and AutoGen bring their own runtimes. AgentFlow4J runs on the Spring stack your team already owns, already secures, and already operates.
+
+**Use it if** your workflow spans multiple agents, failures matter, costs need capping, or a human must approve before an action executes.
+**Skip it if** you make a single `ChatClient` call.
 
 ---
 
