@@ -3,7 +3,7 @@
 **Build multi-agent AI workflows in Java. Run them in production with security, governance, resilience, and FinOps — built into every execution, JVM-native, Spring-powered.**
 
 <p align="center">
-<img width="1536" height="768" alt="AgentFlow4J — Build · Govern · Run" src="docs/images/AgentFlow4j.jpg" />
+<img width="1536" height="768" alt="AgentFlow4J — Build · Govern · Run" src="docs/images/hero.jpg" />
 
 </p>
 
