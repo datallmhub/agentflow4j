@@ -88,12 +88,12 @@ AgentResult result = graph.run(AgentContext.of("Process this refund request"));
 **Spring AI helps you talk to AI models. AgentFlow4J helps AI agents work together safely in production.**
 
 ```
-BUILD                   COMPOSE                 GOVERN                  RUN
-─────────────────────   ─────────────────────   ─────────────────────   ─────────────────────
-ExecutorAgent           AgentGraph              BudgetPolicy            RetryPolicy
-CoordinatorAgent        Routing                 ApprovalGate            CheckpointStore
-ReActAgent              Typed State             ToolPolicy              RunLog
-ParallelAgent           Graph DSL               StatePolicy             Micrometer
+CREATE               CONNECT              CONTROL              EXECUTE
+────────────────     ────────────────     ────────────────     ────────────────
+ExecutorAgent        AgentGraph           BudgetPolicy         RetryPolicy
+CoordinatorAgent     Routing              ApprovalGate         CheckpointStore
+ReActAgent           Typed State          ToolPolicy           RunLog
+ParallelAgent        Graph DSL            StatePolicy          Micrometer
 ```
 
 No other agent framework combines these five dimensions in a single JVM-native runtime:
