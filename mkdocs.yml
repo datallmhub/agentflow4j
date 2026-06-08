@@ -98,6 +98,7 @@ nav:
       - "Multi-agent workflow in Java with Spring AI": tutorials/multi-agent-workflow-java-spring-ai.md
       - "Human-in-the-loop approval in Java AI agents": tutorials/human-in-the-loop-java-ai-agents.md
       - "LLM cost control for Java agents — BudgetPolicy": tutorials/llm-cost-control-java-budget-policy.md
+      - "Checkpoint and resume agent workflows in Spring Boot": tutorials/checkpoint-resume-agent-spring-boot.md
   - Testing: testing.md
   - Samples: samples.md
   - Cookbook ↗: https://github.com/datallmhub/agentflow4j-cookbook
