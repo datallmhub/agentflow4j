@@ -97,6 +97,7 @@ nav:
       - "Stop your agent burning $1000 overnight": tutorials/stop-your-agent-burning-money.md
       - "Multi-agent workflow in Java with Spring AI": tutorials/multi-agent-workflow-java-spring-ai.md
       - "Human-in-the-loop approval in Java AI agents": tutorials/human-in-the-loop-java-ai-agents.md
+      - "LLM cost control for Java agents — BudgetPolicy": tutorials/llm-cost-control-java-budget-policy.md
   - Testing: testing.md
   - Samples: samples.md
   - Cookbook ↗: https://github.com/datallmhub/agentflow4j-cookbook
