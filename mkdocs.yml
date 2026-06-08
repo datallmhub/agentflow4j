@@ -95,6 +95,7 @@ nav:
   - Tutorials:
       - "Run your first agent for free (Mistral)": tutorials/free-mistral-quickstart.md
       - "Stop your agent burning $1000 overnight": tutorials/stop-your-agent-burning-money.md
+      - "Multi-agent workflow in Java with Spring AI": tutorials/multi-agent-workflow-java-spring-ai.md
   - Testing: testing.md
   - Samples: samples.md
   - Cookbook ↗: https://github.com/datallmhub/agentflow4j-cookbook
