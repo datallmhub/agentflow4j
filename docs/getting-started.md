@@ -6,7 +6,7 @@ description: "Get started with AgentFlow4J: add the dependency to your Spring ap
 
 This page takes you from an empty Spring project to a running multi-agent graph. Three steps: add the dependency, write a first agent, then compose a graph.
 
-> Just want to see it run without integrating anything? Clone the repo and run the bundled demo — see [Try it in 30 seconds](index.md#try-it-in-30-seconds).
+> Just want to see it run without integrating anything? Clone the repo and run the bundled demo — see [Try it in 5 minutes](index.md#try-it-in-5-minutes).
 
 ## Requirements
 

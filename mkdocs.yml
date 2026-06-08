@@ -74,6 +74,7 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Core concepts: concepts.md
   - Get started:
       - Getting started: getting-started.md
       - Two API levels: two-api-levels.md
