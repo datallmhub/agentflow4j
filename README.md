@@ -1,13 +1,13 @@
 # AgentFlow4J
 
-**Build multi-agent AI workflows in Java. Run them in production with security, governance, resilience, and FinOps — built into every execution, JVM-native, Spring-powered.**
+**AgentFlow4J helps you create, coordinate and govern AI agents working together on business tasks.**
+
+Built for Java — with approvals, budgets, permissions, checkpoints and production-grade execution.
 
 <p align="center">
 <img width="1536" height="768" alt="AgentFlow4J — Build · Govern · Run" src="docs/images/hero.jpg" />
 
 </p>
-
-No orchestration boilerplate. No hidden execution. Just define your agents and run.
 
 [![build](https://github.com/datallmhub/agentflow4j/actions/workflows/build.yml/badge.svg)](https://github.com/datallmhub/agentflow4j/actions)
 [![Java 17+](https://img.shields.io/badge/Java-17%2B-blue)](https://adoptium.net/)
@@ -83,28 +83,33 @@ AgentResult result = graph.run(AgentContext.of("Process this refund request"));
 
 ---
 
-## Why AgentFlow4J?
+## Core concepts
 
-**Spring AI helps you talk to AI models. AgentFlow4J helps AI agents work together safely in production.**
+AgentFlow4J is built around four ideas:
 
-```
-CREATE               CONNECT              CONTROL              EXECUTE
-────────────────     ────────────────     ────────────────     ────────────────
-ExecutorAgent        AgentGraph           BudgetPolicy         RetryPolicy
-CoordinatorAgent     Routing              ApprovalGate         CheckpointStore
-ReActAgent           Typed State          ToolPolicy           RunLog
-ParallelAgent        Graph DSL            StatePolicy          Micrometer
-```
+| Concept | What it means | AgentFlow4J |
+|---|---|---|
+| **Agents** | Autonomous units that perform tasks | `ExecutorAgent`, `ReActAgent`, `ParallelAgent` |
+| **Teams** | Agents working together, coordinated | `CoordinatorAgent`, `AgentGraph` |
+| **Rules** | What agents can do, spend, or change | `ApprovalGate`, `BudgetPolicy`, `ToolPolicy`, `StatePolicy` |
+| **Execution** | How runs survive failures and restarts | `RetryPolicy`, `CheckpointStore`, `RunLog`, Micrometer |
 
-No other agent framework combines these five dimensions in a single JVM-native runtime:
+---
 
-| Dimension | What you get |
+## Why not Spring AI alone?
+
+Spring AI gives you the primitives to call a model. AgentFlow4J gives you the runtime to orchestrate agents safely.
+
+| Spring AI | AgentFlow4J |
 |---|---|
-| **Security & AuthZ** | Spring Security integration — your existing roles and permissions govern which agents can act |
-| **Governance** | `ApprovalGate`, `ToolPolicy`, `StatePolicy` — agents are not implicitly trusted |
-| **FinOps** | `BudgetPolicy` at RUN / NODE / CALL granularity + `BudgetAwareRouter` for cost-aware routing |
-| **Resilience** | `RetryPolicy` + `FailureClassifier` (TRANSIENT / PERMANENT / OVER_BUDGET) — typed, composable |
-| **Spring runtime** | Actuator, Micrometer, JPA, Flyway, `application.yml` — no new infrastructure to deploy or audit |
+| Talk to AI models | Coordinate multiple agents |
+| Prompts & tools | Agent teams with routing |
+| Tool calling | Governance — who can call what |
+| `ChatClient` | `AgentGraph` execution |
+| RAG | Checkpointing & resume |
+| Model providers | Retry, resilience, audit trail |
+
+**Spring AI provides AI capabilities. AgentFlow4J provides agent execution.**
 
 LangGraph, ADK, CrewAI and AutoGen bring their own runtimes. AgentFlow4J runs on the Spring stack your team already owns, already secures, and already operates.
 
