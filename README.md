@@ -1,8 +1,8 @@
 # AgentFlow4J
 
-**AgentFlow4J helps you create, coordinate and govern AI agents working together on business tasks.**
+**Spring AI lets you talk to a model. AgentFlow4J lets you run a governed, durable agent system in production.**
 
-Built for Java — with approvals, budgets, permissions, checkpoints and production-grade execution.
+Built for Java/Spring — multi-agent workflows with checkpoints, human approvals, budget controls and tool policies, on the Spring stack you already operate.
 
 <p align="center">
 <img width="1536" height="768" alt="AgentFlow4J — Build · Govern · Run" src="docs/images/hero.jpg" />
