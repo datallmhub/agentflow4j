@@ -2,8 +2,7 @@
 
 **Build, govern and operate AI agents without introducing a second runtime.**
 
-Spring AI provides model access. AgentFlow4J provides the execution —
-human approvals, checkpoints, budget controls and tool policies, built for Spring.
+Spring AI provides model access. AgentFlow4J lets you build, govern and run multi-agent systems — human approvals, checkpoints, budget controls and tool policies, built for Spring.
 
 <p align="center">
 <img width="1536" height="768" alt="AgentFlow4J — Build · Govern · Run" src="docs/images/hero.jpg" />
