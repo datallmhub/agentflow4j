@@ -19,7 +19,7 @@ Human approvals · Checkpoints · Budget controls · Tool policies · Durable ex
 ---
 
 <p align="center">
-<img width="1536" height="768" alt="AgentFlow4J — Build · Govern · Run" src="docs/images/hero.jpg" />
+<img width="1536" height="768" alt="AgentFlow4J: Build · Govern · Run" src="docs/images/hero.jpg" />
 </p>
 
 [![build](https://github.com/datallmhub/agentflow4j/actions/workflows/build.yml/badge.svg)](https://github.com/datallmhub/agentflow4j/actions)
@@ -38,7 +38,7 @@ mvn install -DskipTests -q
 mvn -pl agentflow4j-samples exec:java
 ```
 
-Runs `SupportTriageDemo` by default — a **business example built with AgentFlow4J**: a support ticket flowing through a governed graph (triage → specialist → policy gate → reply), with `ToolPolicy` and `ApprovalGate` active. This is one sample use case to illustrate the framework, not the framework itself. No API key required; falls back to deterministic stubs, or calls Mistral when `MISTRAL_API_KEY` is set.
+Runs `SupportTriageDemo` by default: a **business example built with AgentFlow4J**: a support ticket flowing through a governed graph (triage → specialist → policy gate → reply), with `ToolPolicy` and `ApprovalGate` active. This is one sample use case to illustrate the framework, not the framework itself. No API key required; falls back to deterministic stubs, or calls Mistral when `MISTRAL_API_KEY` is set.
 
 Other demos to explore:
 
@@ -48,7 +48,7 @@ Other demos to explore:
 | `BudgetAwareRoutingDemo` | `BudgetPolicy` switching agents at runtime |
 | `ResearchSquad` | `ParallelAgent` fan-out + result aggregation |
 | `AdvancedGraphDemo` | Loops, conditions, typed state |
-| `MinimalPipeline` | Smallest possible `AgentGraph` — two nodes, one edge |
+| `MinimalPipeline` | Smallest possible `AgentGraph`: two nodes, one edge |
 
 ```bash
 # Run any demo directly
@@ -78,7 +78,7 @@ AgentGraph graph = AgentGraph.builder()
 AgentResult result = graph.run(AgentContext.of("Process this refund request"));
 ```
 
-`ToolPolicy` restricts which tools the agent can call. `BudgetPolicy` caps spend at $0.50 per run. `ApprovalGate` pauses execution until a human approves. `CheckpointStore` persists graph state — the run resumes from the last completed node after a restart.
+`ToolPolicy` restricts which tools the agent can call. `BudgetPolicy` caps spend at $0.50 per run. `ApprovalGate` pauses execution until a human approves. `CheckpointStore` persists graph state: the run resumes from the last completed node after a restart.
 
 ⭐ **If this saves you time, consider [starring the repo](https://github.com/datallmhub/agentflow4j).**
 
@@ -86,7 +86,7 @@ AgentResult result = graph.run(AgentContext.of("Process this refund request"));
 
 ## 🎬 Example in action
 
-One real workflow built with AgentFlow4J — a customer-support triage app. This is **one sample use case**, not the framework itself; you compose your own agents and graphs the same way.
+One real workflow built with AgentFlow4J: a customer-support triage app. This is **one sample use case**, not the framework itself; you compose your own agents and graphs the same way.
 
 <p align="center">
 <img width="760" alt="A customer-support multi-agent workflow built with AgentFlow4J, running live" src="docs/images/use-case.gif" />
@@ -133,7 +133,7 @@ Spring AI gives you the primitives to call a model. AgentFlow4J gives you the ru
 |---|---|
 | Talk to AI models | Coordinate multiple agents |
 | Prompts & tools | Agent teams with routing |
-| Tool calling | Governance — who can call what |
+| Tool calling | Governance: who can call what |
 | `ChatClient` | `AgentGraph` execution |
 | RAG | Checkpointing & resume |
 | Model providers | Retry, resilience, audit trail |
@@ -187,31 +187,31 @@ dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-sta
 | `agentflow4j-checkpoint` | `JdbcCheckpointStore`, `RedisCheckpointStore`, Jackson codec |
 | `agentflow4j-resilience4j` | `CircuitBreakerPolicy` adapter backed by Resilience4j |
 | `agentflow4j-playground` | Drop-in web UI to chat with your `Agent` beans |
-| `agentflow4j-cli-agents` | `CliAgentNode` — Claude Code / Codex / Gemini CLI as graph nodes |
+| `agentflow4j-cli-agents` | `CliAgentNode`: Claude Code / Codex / Gemini CLI as graph nodes |
 | `agentflow4j-test` | `MockAgent`, `TestGraph` for LLM-free unit tests |
 
 ---
 
 ## 📚 Documentation
 
-- [Two API levels (Squad + Graph)](docs/two-api-levels.md) — when to use which, with code
-- [LLM providers](docs/llm-providers.md) — swap between Mistral, OpenAI, Claude, Gemini, Ollama with two lines of config
-- [Typed state](docs/state.md) — `StateKey<T>` instead of `Map<String, Object>`
-- [Tool policy](docs/tool-policy.md) — allow/deny tool calls per agent, with argument-aware rules
-- [State policy](docs/state-policy.md) — allow/deny writes to specific `StateKey<T>`, with argument-aware rules
-- [Approval gate](docs/approval-gate.md) — human-in-the-loop pause/resume on sensitive nodes
-  - [Recipe: approval via Slack](docs/recipes/approval-via-slack.md) — async, non-blocking, ~30 lines
-- [Resilience & error handling](docs/resilience.md) — retries, circuit breaker, budget policy
-  - [Recipe: durable runs](docs/recipes/durable-runs.md) — crash mid-workflow, resume from the last checkpoint
-- [Observability](docs/observability.md) — Micrometer metrics, tags, listeners
-- [Run log](docs/run-log.md) — structured, replayable execution timeline per run
-- [Streaming](docs/streaming.md) — `Flux<AgentEvent>` tokens, transitions, tool calls
-- [Testing without an LLM](docs/testing.md) — `MockAgent` + `TestGraph`
-- [Samples](docs/samples.md) — runnable examples shipped with the repo
+- [Two API levels (Squad + Graph)](docs/two-api-levels.md): when to use which, with code
+- [LLM providers](docs/llm-providers.md): swap between Mistral, OpenAI, Claude, Gemini, Ollama with two lines of config
+- [Typed state](docs/state.md): `StateKey<T>` instead of `Map<String, Object>`
+- [Tool policy](docs/tool-policy.md): allow/deny tool calls per agent, with argument-aware rules
+- [State policy](docs/state-policy.md): allow/deny writes to specific `StateKey<T>`, with argument-aware rules
+- [Approval gate](docs/approval-gate.md): human-in-the-loop pause/resume on sensitive nodes
+  - [Recipe: approval via Slack](docs/recipes/approval-via-slack.md): async, non-blocking, ~30 lines
+- [Resilience & error handling](docs/resilience.md): retries, circuit breaker, budget policy
+  - [Recipe: durable runs](docs/recipes/durable-runs.md): crash mid-workflow, resume from the last checkpoint
+- [Observability](docs/observability.md): Micrometer metrics, tags, listeners
+- [Run log](docs/run-log.md): structured, replayable execution timeline per run
+- [Streaming](docs/streaming.md): `Flux<AgentEvent>` tokens, transitions, tool calls
+- [Testing without an LLM](docs/testing.md): `MockAgent` + `TestGraph`
+- [Samples](docs/samples.md): runnable examples shipped with the repo
 
-**Cookbook:** [AgentFlow4J Cookbook](https://github.com/datallmhub/agentflow4j-cookbook) — standalone, copy-paste recipes (RAG agent, support-ticket triage, web research, Slack bot, batch document processing), each a self-contained Maven module that runs locally against Ollama.
+**Cookbook:** [AgentFlow4J Cookbook](https://github.com/datallmhub/agentflow4j-cookbook): standalone, copy-paste recipes (RAG agent, support-ticket triage, web research, Slack bot, batch document processing), each a self-contained Maven module that runs locally against Ollama.
 
-**Tutorial:** [Stop your AI agent from burning $1000 overnight](docs/tutorials/stop-your-agent-burning-money.md) — governed execution end to end.
+**Tutorial:** [Stop your AI agent from burning $1000 overnight](docs/tutorials/stop-your-agent-burning-money.md): governed execution end to end.
 
 ---
 
@@ -220,7 +220,7 @@ dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-sta
 | Version | Status | Focus |
 |---------|--------|-------|
 | **0.5** | shipped | Subgraphs, parallel fan-out, cancellation, typed output, retry/circuit-breaker/budget policies, JDBC/Redis checkpoint store, web playground |
-| **0.6** | shipped | Governed execution: `ToolPolicy`, `StatePolicy`, `ApprovalGate` — allow/deny tools, guard state writes, human-in-the-loop pause/resume |
+| **0.6** | shipped | Governed execution: `ToolPolicy`, `StatePolicy`, `ApprovalGate`: allow/deny tools, guard state writes, human-in-the-loop pause/resume |
 | **0.7** | shipped | Adaptive execution: reason-aware retry (`FailureClassifier`), cost-aware routing (`BudgetAwareRouter`) |
 | **1.0** | in progress | API stabilization pass · lifecycle hooks (`onCheckpoint`, `onToolCall`, `onFailure`) · MCP compatibility · OpenHands integration adapter · Parallel-DAG execution |
 | **2.0** | exploring | Temporal-like interruption, compensation/saga, OpenTelemetry tracing |
@@ -229,5 +229,5 @@ dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-sta
 
 ## 🤝 Contributing & License
 
-Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributions welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
 Released under the [Apache 2.0 License](LICENSE). Not an official Spring project.
