@@ -29,7 +29,7 @@ Human approvals · Checkpoints · Budget controls · Tool policies · Durable ex
 
 ---
 
-## 🚀 Try it in 5 minutes (no API key)
+## 🚀 Try the demo in 5 minutes
 
 ```bash
 git clone https://github.com/datallmhub/agentflow4j.git
@@ -84,15 +84,7 @@ AgentResult result = graph.run(AgentContext.of("Process this refund request"));
 
 ---
 
-## 🎬 Example in action
-
-One real workflow built with AgentFlow4J: a customer-support triage app. This is **one sample use case**, not the framework itself; you compose your own agents and graphs the same way.
-
-<p align="center">
-<img width="760" alt="A customer-support multi-agent workflow built with AgentFlow4J, running live" src="docs/images/use-case.gif" />
-</p>
-
-▶ Live demo: <https://huggingface.co/spaces/datallmhub/multi-agent-customer-ops>
+▶ [See it in action](https://huggingface.co/spaces/datallmhub/multi-agent-customer-ops): live demo of a sample implementation, a governed multi-agent customer-support workflow.
 
 ---
 
@@ -107,88 +99,13 @@ One real workflow built with AgentFlow4J: a customer-support triage app. This is
 | **Resilience** | Classify failures, retry smart, route to fallback | `RetryPolicy`, `FailureClassifier`, `BudgetAwareRouter` |
 | **Observability** | Metrics, run logs, streaming events | Micrometer, `RunLog`, `Flux<AgentEvent>` |
 
-Agents are **not implicitly trusted**. Gate what they can call, what they can change, what they can spend, and when a human must step in:
-
-```java
-AgentGraph.builder()
-    .addNode("assistant", assistant)
-    .addNode("payment.transfer", paymentAgent)
-    .toolPolicy(ToolPolicy.allowList("web.search").and(ToolPolicy.denyList("shell.execute")))
-    .statePolicy(StatePolicy.denyWriteKeys("payment.confirmed"))
-    .budgetPolicy(BudgetPolicy.hierarchical(BudgetLimits.run(2.00), estimator, meter))
-    .approvalGate(ApprovalGate.requireFor("payment.transfer"))
-    .checkpointStore(store)
-    .build();
-```
-
 Two API levels: **Squad API** for dynamic routing with minimal setup, **Graph API** for explicit flows, loops and full control. See [Two API levels](docs/two-api-levels.md).
-
----
-
-## Why not Spring AI alone?
-
-Spring AI gives you the primitives to call a model. AgentFlow4J gives you the runtime to orchestrate agents safely.
-
-| Spring AI | AgentFlow4J |
-|---|---|
-| Talk to AI models | Coordinate multiple agents |
-| Prompts & tools | Agent teams with routing |
-| Tool calling | Governance: who can call what |
-| `ChatClient` | `AgentGraph` execution |
-| RAG | Checkpointing & resume |
-| Model providers | Retry, resilience, audit trail |
-
-**Spring AI provides AI capabilities. AgentFlow4J provides agent execution.**
-
-LangGraph, ADK, CrewAI and AutoGen bring their own runtimes. AgentFlow4J runs on the Spring stack your team already owns, already secures, and already operates.
-
-**Use it if** your workflow spans multiple agents, failures matter, costs need capping, or a human must approve before an action executes.
-**Skip it if** you make a single `ChatClient` call.
 
 ---
 
 ## 🛠 Installation
 
-**Requirements:** Java 17+, Spring Boot 3.x, Spring AI 1.0+.
-Distributed via [JitPack](https://jitpack.io).
-
-### Maven
-
-```xml
-<repositories>
-    <repository>
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
-    </repository>
-</repositories>
-
-<dependency>
-    <groupId>com.github.datallmhub.agentflow4j</groupId>
-    <artifactId>agentflow4j-starter</artifactId>
-    <version>v0.7.0</version>
-</dependency>
-```
-
-### Gradle
-
-```groovy
-repositories { maven { url 'https://jitpack.io' } }
-dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-starter:v0.7.0' }
-```
-
-### Modules
-
-| Module | Purpose |
-|---|---|
-| `agentflow4j-starter` | Spring Boot auto-config, properties, Micrometer listener |
-| `agentflow4j-core` | Minimal API (`Agent`, `AgentContext`, `StateKey`, `AgentResult`) |
-| `agentflow4j-graph` | `AgentGraph`, `RetryPolicy`, `CircuitBreakerPolicy`, `BudgetPolicy`, checkpoint contract |
-| `agentflow4j-squad` | `CoordinatorAgent`, `ExecutorAgent`, `ReActAgent`, `ParallelAgent` |
-| `agentflow4j-checkpoint` | `JdbcCheckpointStore`, `RedisCheckpointStore`, Jackson codec |
-| `agentflow4j-resilience4j` | `CircuitBreakerPolicy` adapter backed by Resilience4j |
-| `agentflow4j-playground` | Drop-in web UI to chat with your `Agent` beans |
-| `agentflow4j-cli-agents` | `CliAgentNode`: Claude Code / Codex / Gemini CLI as graph nodes |
-| `agentflow4j-test` | `MockAgent`, `TestGraph` for LLM-free unit tests |
+See [Getting started](docs/getting-started.md) for Maven/Gradle setup and module reference.
 
 ---
 
