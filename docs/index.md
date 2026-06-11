@@ -1,12 +1,14 @@
 ---
-description: "AgentFlow4J helps you create, coordinate and govern AI agents working together on business tasks. Built for Java with approvals, budgets, permissions, checkpoints and production-grade execution."
+description: "AgentFlow4J is a framework and runtime for governed, stateful multi-agent systems on the JVM. Human approvals, checkpoints, budget controls, tool policies and durable execution built for Spring."
 ---
 
 # AgentFlow4J
 
-**AgentFlow4J helps you create, coordinate and govern AI agents working together on business tasks.**
+**Build AI agents you can trust in production.**
 
-Built for Java — with approvals, budgets, permissions, checkpoints and production-grade execution.
+AgentFlow4J is a framework and runtime for governed, stateful multi-agent systems on the JVM.
+
+Human approvals · Checkpoints · Budget controls · Tool policies · Durable execution
 
 [:material-rocket-launch: Get started](getting-started.md){ .md-button .md-button--primary }
 [:material-book-open: Core concepts](concepts.md){ .md-button }
@@ -14,37 +16,30 @@ Built for Java — with approvals, budgets, permissions, checkpoints and product
 
 ---
 
-## Core concepts
+## Why AgentFlow4J?
 
-AgentFlow4J is built around four ideas:
+- Build multi-agent workflows with explicit orchestration
+- Persist execution across failures and restarts
+- Add human approval where it matters
+- Control tool access and AI spend
+- Run natively on the JVM and Spring ecosystem
 
-| Concept | What it means | AgentFlow4J |
+---
+
+## Core capabilities
+
+| Capability | What it does | AgentFlow4J |
 |---|---|---|
-| **Agents** | Autonomous units that perform tasks | `ExecutorAgent`, `ReActAgent`, `ParallelAgent` |
-| **Teams** | Agents working together, coordinated | `CoordinatorAgent`, `AgentGraph` |
-| **Rules** | What agents can do, spend, or change | `ApprovalGate`, `BudgetPolicy`, `ToolPolicy`, `StatePolicy` |
-| **Execution** | How runs survive failures and restarts | `RetryPolicy`, `CheckpointStore`, `RunLog`, Micrometer |
+| **Multi-agent orchestration** | Build agent teams with routing and fan-out | `AgentGraph`, `CoordinatorAgent`, `ParallelAgent` |
+| **Governance** | Control what agents can call, change, or spend | `ToolPolicy`, `StatePolicy`, `BudgetPolicy`, `ApprovalGate` |
+| **Durable execution** | Survive restarts, resume from last checkpoint | `JdbcCheckpointStore`, `RedisCheckpointStore` |
+| **Human-in-the-loop** | Pause before critical actions, resume on approval | `ApprovalGate` |
+| **Resilience** | Classify failures, retry smart, route to fallback | `RetryPolicy`, `FailureClassifier`, `BudgetAwareRouter` |
+| **Observability** | Metrics, run logs, streaming events | Micrometer, `RunLog`, `Flux<AgentEvent>` |
 
 ---
 
-## Why not Spring AI alone?
-
-Spring AI gives you the primitives to call a model. AgentFlow4J gives you the runtime to orchestrate agents safely.
-
-| Spring AI | AgentFlow4J |
-|---|---|
-| Talk to AI models | Coordinate multiple agents |
-| Prompts & tools | Agent teams with routing |
-| Tool calling | Governance — who can call what |
-| `ChatClient` | `AgentGraph` execution |
-| RAG | Checkpointing & resume |
-| Model providers | Retry, resilience, audit trail |
-
-**Spring AI provides AI capabilities. AgentFlow4J provides agent execution.**
-
----
-
-## Try it in 5 minutes
+## Try the demo in 5 minutes
 
 ```bash
 git clone https://github.com/datallmhub/agentflow4j.git
@@ -53,14 +48,14 @@ mvn install -DskipTests -q
 mvn -pl agentflow4j-samples exec:java
 ```
 
-Runs `SupportTriageDemo` — a **business example built with AgentFlow4J**: a support ticket flowing through a governed graph with `ToolPolicy` and `ApprovalGate` active. No API key required.
+Runs `SupportTriageDemo`: a governed multi-agent workflow with `ToolPolicy` and `ApprovalGate` active. No API key required.
 
 ---
 
 ## Where to next
 
-- **New here?** Start with [Core concepts](concepts.md) — what agents, teams, rules and execution mean in AgentFlow4J.
-- **Ready to code?** Follow the [Getting started](getting-started.md) guide — from `mvn` dependency to a running graph.
+- **New here?** Start with [Core concepts](concepts.md).
+- **Ready to code?** Follow the [Getting started](getting-started.md) guide.
 - **Want runnable examples?** The [Cookbook](https://github.com/datallmhub/agentflow4j-cookbook) has six self-contained Java recipes.
 - **Building for production?** [Durable runs](recipes/durable-runs.md) shows how to survive a mid-workflow crash.
 - **Worried about cost?** [Stop your agent burning $1000 overnight](tutorials/stop-your-agent-burning-money.md) walks through every governance gate.
