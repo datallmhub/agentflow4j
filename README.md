@@ -29,34 +29,6 @@ Human approvals · Checkpoints · Budget controls · Tool policies · Durable ex
 
 ---
 
-## 🚀 Try the demo in 5 minutes
-
-```bash
-git clone https://github.com/datallmhub/agentflow4j.git
-cd agentflow4j
-mvn install -DskipTests -q
-mvn -pl agentflow4j-samples exec:java
-```
-
-Runs `SupportTriageDemo` by default: a **business example built with AgentFlow4J**: a support ticket flowing through a governed graph (triage → specialist → policy gate → reply), with `ToolPolicy` and `ApprovalGate` active. This is one sample use case to illustrate the framework, not the framework itself. No API key required; falls back to deterministic stubs, or calls Mistral when `MISTRAL_API_KEY` is set.
-
-Other demos to explore:
-
-| Demo | What it shows |
-|---|---|
-| `SupportTriageDemo` | Multi-agent graph with `ToolPolicy` + `ApprovalGate` |
-| `BudgetAwareRoutingDemo` | `BudgetPolicy` switching agents at runtime |
-| `ResearchSquad` | `ParallelAgent` fan-out + result aggregation |
-| `AdvancedGraphDemo` | Loops, conditions, typed state |
-| `MinimalPipeline` | Smallest possible `AgentGraph`: two nodes, one edge |
-
-```bash
-# Run any demo directly
-mvn -pl agentflow4j-samples exec:java -Dexec.mainClass=io.github.datallmhub.agentflow4j.samples.BudgetAwareRoutingDemo
-```
-
----
-
 ## ⚡ In 60 seconds
 
 ```java
@@ -83,6 +55,19 @@ AgentResult result = graph.run(AgentContext.of("Process this refund request"));
 ⭐ **If this saves you time, consider [starring the repo](https://github.com/datallmhub/agentflow4j).**
 
 ---
+
+## 🚀 Try the demo in 5 minutes
+
+```bash
+git clone https://github.com/datallmhub/agentflow4j.git
+cd agentflow4j
+mvn install -DskipTests -q
+mvn -pl agentflow4j-samples exec:java
+```
+
+Runs `SupportTriageDemo` by default: a governed multi-agent workflow with `ToolPolicy` and `ApprovalGate` active. No API key required; falls back to deterministic stubs, or calls Mistral when `MISTRAL_API_KEY` is set.
+
+See [all samples](docs/samples.md) to explore other demos.
 
 ▶ [See it in action](https://huggingface.co/spaces/datallmhub/multi-agent-customer-ops): live demo of a sample implementation, a governed multi-agent customer-support workflow.
 
