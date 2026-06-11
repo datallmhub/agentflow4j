@@ -33,6 +33,14 @@ import org.springframework.ai.mistralai.api.MistralAiApi;
  */
 public class SupportTriageDemo {
 
+    static final String RESET  = "[0m";
+    static final String BOLD   = "[1m";
+    static final String CYAN   = "[36m";
+    static final String GREEN  = "[32m";
+    static final String YELLOW = "[33m";
+    static final String MAGENTA= "[35m";
+    static final String DIM    = "[2m";
+
     enum Category { REFUND, BILLING, TECHNICAL, GENERAL }
 
     static final StateKey<String>   TICKET_ID     = StateKey.of("ticket.id",       String.class);
@@ -49,17 +57,17 @@ public class SupportTriageDemo {
 
         AgentContext ctx = AgentContext.of(body).with(TICKET_ID, "4521");
 
-        System.out.println("=== Customer Support Triage ===");
-        System.out.println("[mode]      " + (chat != null ? "LIVE (Mistral)" : "STUB (no MISTRAL_API_KEY)") + "\n");
-        System.out.println("Ticket #" + ctx.get(TICKET_ID) + ":");
-        System.out.println("  \"" + body + "\"\n");
+        System.out.println(BOLD + "=== Customer Support Triage ===" + RESET);
+        System.out.println(DIM + "[mode]      " + (chat != null ? "LIVE (Mistral)" : "STUB (no MISTRAL_API_KEY)") + RESET + "\n");
+        System.out.println(BOLD + "Ticket #" + ctx.get(TICKET_ID) + RESET);
+        System.out.println(DIM + "  \"" + body + "\"" + RESET + "\n");
 
         AgentResult result = graph.invoke(ctx);
 
-        System.out.println("\nFinal response sent to the customer:");
-        System.out.println("─".repeat(60));
-        System.out.println(result.text());
-        System.out.println("─".repeat(60));
+        System.out.println("\n" + BOLD + "Final response sent to the customer:" + RESET);
+        System.out.println(DIM + "─".repeat(60) + RESET);
+        System.out.println(GREEN + result.text() + RESET);
+        System.out.println(DIM + "─".repeat(60) + RESET);
     }
 
     public static AgentGraph buildGraph(@Nullable ChatClient chat) {
@@ -78,7 +86,7 @@ public class SupportTriageDemo {
         Agent policy = ctx -> {
             String draft = ctx.get(DRAFT);
             boolean ok = draft != null && !draft.toLowerCase().contains("password");
-            System.out.println("[policy]    passed = " + ok);
+            System.out.println(MAGENTA + "[policy]" + RESET + "    passed = " + ok);
             return AgentResult.builder()
                     .text(ok ? "policy ok" : "policy violation")
                     .stateUpdates(Map.of(POLICY_PASSED, ok))
@@ -92,7 +100,7 @@ public class SupportTriageDemo {
             String body = Boolean.TRUE.equals(ok)
                     ? "Hi,\n\n" + draft + "\n\n— Customer Support"
                     : "Hi,\n\nYour ticket is being escalated to a human agent.\n\n— Customer Support";
-            System.out.println("[reply]     drafted (" + body.length() + " chars)");
+            System.out.println(GREEN + "[reply]" + RESET + "     drafted (" + body.length() + " chars)");
             return AgentResult.ofText(body);
         };
 
@@ -126,7 +134,7 @@ public class SupportTriageDemo {
                     .call()
                     .content();
             Category cat = parseCategory(reply);
-            System.out.println("[triage]    Mistral said \"" + reply.trim() + "\" → " + cat);
+            System.out.println(CYAN + "[triage]" + RESET + "    Mistral said \"" + reply.trim() + "\" → " + cat);
             return AgentResult.builder()
                     .text("classified")
                     .stateUpdates(Map.of(CATEGORY, cat))
@@ -138,7 +146,7 @@ public class SupportTriageDemo {
     private static Agent stubTriage() {
         return ctx -> {
             Category cat = stubClassify(lastUser(ctx));
-            System.out.println("[triage]    category = " + cat);
+            System.out.println(CYAN + "[triage]" + RESET + "    category = " + cat);
             return AgentResult.builder()
                     .text("classified")
                     .stateUpdates(Map.of(CATEGORY, cat))
@@ -156,7 +164,7 @@ public class SupportTriageDemo {
                     .user(lastUser(ctx))
                     .call()
                     .content();
-            System.out.println("[" + label + "]    Mistral drafted (" + reply.length() + " chars)");
+            System.out.println(YELLOW + "[" + label + "]" + RESET + "    Mistral drafted (" + reply.length() + " chars)");
             return AgentResult.builder()
                     .text(reply)
                     .stateUpdates(Map.of(DRAFT, reply))
@@ -167,7 +175,7 @@ public class SupportTriageDemo {
 
     private static Agent stubSpecialist(String label, String draft) {
         return ctx -> {
-            System.out.println("[" + label + "]    stub drafted");
+            System.out.println(YELLOW + "[" + label + "]" + RESET + "    stub drafted");
             return AgentResult.builder()
                     .text(draft)
                     .stateUpdates(Map.of(DRAFT, draft))
