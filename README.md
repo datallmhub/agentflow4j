@@ -6,9 +6,20 @@ AgentFlow4J is a framework and runtime for governed, stateful multi-agent system
 
 Human approvals · Checkpoints · Budget controls · Tool policies · Durable execution
 
+---
+
+## Why AgentFlow4J?
+
+- Build multi-agent workflows with explicit orchestration
+- Persist execution across failures and restarts
+- Add human approval where it matters
+- Control tool access and AI spend
+- Run natively on the JVM and Spring ecosystem
+
+---
+
 <p align="center">
 <img width="1536" height="768" alt="AgentFlow4J — Build · Govern · Run" src="docs/images/hero.jpg" />
-
 </p>
 
 [![build](https://github.com/datallmhub/agentflow4j/actions/workflows/build.yml/badge.svg)](https://github.com/datallmhub/agentflow4j/actions)
@@ -17,7 +28,7 @@ Human approvals · Checkpoints · Budget controls · Tool policies · Durable ex
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 ---
-        
+
 ## 🚀 Try it in 5 minutes (no API key)
 
 ```bash
@@ -43,18 +54,6 @@ Other demos to explore:
 # Run any demo directly
 mvn -pl agentflow4j-samples exec:java -Dexec.mainClass=io.github.datallmhub.agentflow4j.samples.BudgetAwareRoutingDemo
 ```
-
----
-
-## 🎬 Example in action
-
-One real workflow built with AgentFlow4J — a customer-support triage app. This is **one sample use case**, not the framework itself; you compose your own agents and graphs the same way.
-
-<p align="center">
-<img width="760" alt="A customer-support multi-agent workflow built with AgentFlow4J, running live" src="docs/images/use-case.gif" />
-</p>
-
-▶ Live demo: <https://huggingface.co/spaces/datallmhub/multi-agent-customer-ops>
 
 ---
 
@@ -85,16 +84,44 @@ AgentResult result = graph.run(AgentContext.of("Process this refund request"));
 
 ---
 
-## Core concepts
+## 🎬 Example in action
 
-AgentFlow4J is built around four ideas:
+One real workflow built with AgentFlow4J — a customer-support triage app. This is **one sample use case**, not the framework itself; you compose your own agents and graphs the same way.
 
-| Concept | What it means | AgentFlow4J |
+<p align="center">
+<img width="760" alt="A customer-support multi-agent workflow built with AgentFlow4J, running live" src="docs/images/use-case.gif" />
+</p>
+
+▶ Live demo: <https://huggingface.co/spaces/datallmhub/multi-agent-customer-ops>
+
+---
+
+## Core capabilities
+
+| Capability | What it does | AgentFlow4J |
 |---|---|---|
-| **Agents** | Autonomous units that perform tasks | `ExecutorAgent`, `ReActAgent`, `ParallelAgent` |
-| **Teams** | Agents working together, coordinated | `CoordinatorAgent`, `AgentGraph` |
-| **Rules** | What agents can do, spend, or change | `ApprovalGate`, `BudgetPolicy`, `ToolPolicy`, `StatePolicy` |
-| **Execution** | How runs survive failures and restarts | `RetryPolicy`, `CheckpointStore`, `RunLog`, Micrometer |
+| **Multi-agent orchestration** | Build agent teams with routing and fan-out | `AgentGraph`, `CoordinatorAgent`, `ParallelAgent` |
+| **Governance** | Control what agents can call, change, or spend | `ToolPolicy`, `StatePolicy`, `BudgetPolicy`, `ApprovalGate` |
+| **Durable execution** | Survive restarts, resume from last checkpoint | `JdbcCheckpointStore`, `RedisCheckpointStore` |
+| **Human-in-the-loop** | Pause before critical actions, resume on approval | `ApprovalGate` |
+| **Resilience** | Classify failures, retry smart, route to fallback | `RetryPolicy`, `FailureClassifier`, `BudgetAwareRouter` |
+| **Observability** | Metrics, run logs, streaming events | Micrometer, `RunLog`, `Flux<AgentEvent>` |
+
+Agents are **not implicitly trusted**. Gate what they can call, what they can change, what they can spend, and when a human must step in:
+
+```java
+AgentGraph.builder()
+    .addNode("assistant", assistant)
+    .addNode("payment.transfer", paymentAgent)
+    .toolPolicy(ToolPolicy.allowList("web.search").and(ToolPolicy.denyList("shell.execute")))
+    .statePolicy(StatePolicy.denyWriteKeys("payment.confirmed"))
+    .budgetPolicy(BudgetPolicy.hierarchical(BudgetLimits.run(2.00), estimator, meter))
+    .approvalGate(ApprovalGate.requireFor("payment.transfer"))
+    .checkpointStore(store)
+    .build();
+```
+
+Two API levels: **Squad API** for dynamic routing with minimal setup, **Graph API** for explicit flows, loops and full control. See [Two API levels](docs/two-api-levels.md).
 
 ---
 
@@ -117,42 +144,6 @@ LangGraph, ADK, CrewAI and AutoGen bring their own runtimes. AgentFlow4J runs on
 
 **Use it if** your workflow spans multiple agents, failures matter, costs need capping, or a human must approve before an action executes.
 **Skip it if** you make a single `ChatClient` call.
-
----
-
-## 🛡 Governed by default
-
-Agents are **not implicitly trusted**. Gate what they can call, what they can change, what they can spend, and when a human must step in — without writing governance glue:
-
-```java
-ExecutorAgent paymentAgent = ExecutorAgent.builder()
-    .chatClient(chatClient)
-    .tools(webSearch, shellTool)
-    .toolPolicy(ToolPolicy.allowList("web.search").and(ToolPolicy.denyList("shell.execute")))
-    .build();
-
-AgentGraph.builder()
-    .addNode("assistant", assistant)
-    .addNode("payment.transfer", paymentAgent)
-    .statePolicy(StatePolicy.denyWriteKeys("payment.confirmed"))
-    .budgetPolicy(BudgetPolicy.hierarchical(BudgetLimits.run(2.00), estimator, meter))
-    .approvalGate(ApprovalGate.requireFor("payment.transfer"))
-    .checkpointStore(store)
-    .build();
-```
-
-`ToolPolicy` allows `web.search` and blocks `shell.execute` on the agent. `StatePolicy` prevents any agent from writing `payment.confirmed` directly. `BudgetPolicy` caps the total run at $2.00. `ApprovalGate` pauses before `payment.transfer` executes — a human must approve. Each gate is opt-in with a zero-overhead default.
-
-See [Tool policy](docs/tool-policy.md), [State policy](docs/state-policy.md), [Approval gate](docs/approval-gate.md), [Budget policy](docs/resilience.md#6-budget-policy-cost-gate).
-
----
-
-## 🧩 Two levels of control
-
-- **Squad API** — dynamic routing, minimal setup. A `CoordinatorAgent` dispatches to `ExecutorAgent`s.
-- **Graph API** — explicit flows, loops, conditions, full control.
-
-Both are covered in the [docs](#-documentation).
 
 ---
 
@@ -236,13 +227,7 @@ dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-sta
 
 ---
 
-## 📝 Note on scope
-
-It is not an official Spring project.
-
----
-
 ## 🤝 Contributing & License
 
 Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
-Released under the [Apache 2.0 License](LICENSE).
+Released under the [Apache 2.0 License](LICENSE). Not an official Spring project.
