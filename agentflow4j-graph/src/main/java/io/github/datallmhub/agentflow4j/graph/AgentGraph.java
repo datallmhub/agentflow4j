@@ -115,7 +115,7 @@ public final class AgentGraph implements Agent {
         Objects.requireNonNull(options, "options");
         String runId = options.runId();
         if (runId != null && checkpointStore != null) {
-            checkpointStore.save(new Checkpoint(runId, entryNode, initial, 0, null));
+            saveCheckpoint(checkpointStore, new Checkpoint(runId, entryNode, initial, 0, null));
         }
         return run(initial, entryNode, 0, runId, deadline(options.timeout()));
     }
@@ -219,8 +219,9 @@ public final class AgentGraph implements Agent {
             AgentResult approvalInterrupt = gateApproval(currentNode, context);
             if (approvalInterrupt != null) {
                 recorder.approvalRequired(currentNode, approvalInterrupt.interrupt().reason());
+                notifyApprovalRequired((ApprovalRequest) approvalInterrupt.interrupt().payload());
                 if (runId != null && store != null) {
-                    store.save(new Checkpoint(runId, currentNode, context,
+                    saveCheckpoint(store, new Checkpoint(runId, currentNode, context,
                             iterations - 1, approvalInterrupt.interrupt()));
                 }
                 notifyExit(currentNode, approvalInterrupt, 0L);
@@ -232,6 +233,7 @@ public final class AgentGraph implements Agent {
             NodeOutcome outcome = executeWithPolicy(node, context);
             outcome = enforceStatePolicy(currentNode, outcome);
             recorder.exit(currentNode, outcome.durationNanos);
+            notifyToolCalls(currentNode, outcome.result);
             notifyExit(currentNode, outcome.result, outcome.durationNanos);
 
             if (outcome.result.hasError()) {
@@ -258,9 +260,10 @@ public final class AgentGraph implements Agent {
                 String reason = outcome.result.interrupt().reason();
                 if (reason.startsWith("budget.exceeded")) {
                     recorder.budgetExceeded(currentNode, reason);
+                    notifyBudgetExceeded(currentNode, outcome.result.interrupt());
                 }
                 if (runId != null && store != null) {
-                    store.save(new Checkpoint(runId, currentNode, context,
+                    saveCheckpoint(store, new Checkpoint(runId, currentNode, context,
                             iterations - 1, outcome.result.interrupt()));
                 }
                 recorder.complete("interrupted at " + currentNode + ": " + reason);
@@ -272,7 +275,7 @@ public final class AgentGraph implements Agent {
 
             if (runId != null && store != null) {
                 if (next != null) {
-                    store.save(new Checkpoint(runId, next, context, iterations, null));
+                    saveCheckpoint(store, new Checkpoint(runId, next, context, iterations, null));
                 }
                 else {
                     store.delete(runId);
@@ -347,7 +350,7 @@ public final class AgentGraph implements Agent {
                 String previousNode = null;
                 int iterations = 0;
                 if (runId != null && store != null) {
-                    store.save(new Checkpoint(runId, entryNode, initial, 0, null));
+                    saveCheckpoint(store, new Checkpoint(runId, entryNode, initial, 0, null));
                 }
 
                 while (currentNode != null) {
@@ -384,8 +387,9 @@ public final class AgentGraph implements Agent {
                     AgentResult approvalInterrupt = gateApproval(currentNode, context);
                     if (approvalInterrupt != null) {
                         recorder.approvalRequired(currentNode, approvalInterrupt.interrupt().reason());
+                        notifyApprovalRequired((ApprovalRequest) approvalInterrupt.interrupt().payload());
                         if (runId != null && store != null) {
-                            store.save(new Checkpoint(runId, currentNode, context,
+                            saveCheckpoint(store, new Checkpoint(runId, currentNode, context,
                                     iterations - 1, approvalInterrupt.interrupt()));
                         }
                         notifyExit(currentNode, approvalInterrupt, 0L);
@@ -399,6 +403,7 @@ public final class AgentGraph implements Agent {
                     NodeOutcome outcome = streamNodeWithPolicy(node, context, sink);
                     outcome = enforceStatePolicy(currentNode, outcome);
                     recorder.exit(currentNode, outcome.durationNanos);
+                    notifyToolCalls(currentNode, outcome.result);
                     notifyExit(currentNode, outcome.result, outcome.durationNanos);
 
                     if (outcome.result.hasError()) {
@@ -426,9 +431,10 @@ public final class AgentGraph implements Agent {
                         String reason = outcome.result.interrupt().reason();
                         if (reason.startsWith("budget.exceeded")) {
                             recorder.budgetExceeded(currentNode, reason);
+                            notifyBudgetExceeded(currentNode, outcome.result.interrupt());
                         }
                         if (runId != null && store != null) {
-                            store.save(new Checkpoint(runId, currentNode, context,
+                            saveCheckpoint(store, new Checkpoint(runId, currentNode, context,
                                     iterations - 1, outcome.result.interrupt()));
                         }
                         recorder.complete("interrupted at " + currentNode + ": " + reason);
@@ -441,7 +447,7 @@ public final class AgentGraph implements Agent {
                     String next = nextNode(currentNode, context, lastResult).orElse(null);
                     if (runId != null && store != null) {
                         if (next != null) {
-                            store.save(new Checkpoint(runId, next, context, iterations, null));
+                            saveCheckpoint(store, new Checkpoint(runId, next, context, iterations, null));
                         }
                         else {
                             store.delete(runId);
@@ -761,6 +767,37 @@ public final class AgentGraph implements Agent {
             }
         }
         return Optional.ofNullable(directFallback);
+    }
+
+    private void saveCheckpoint(CheckpointStore store, Checkpoint checkpoint) {
+        store.save(checkpoint);
+        for (AgentListener l : listeners) {
+            try { l.onCheckpoint(name, checkpoint); }
+            catch (Exception e) { log.warn("Listener failed on checkpoint", e); }
+        }
+    }
+
+    private void notifyToolCalls(String node, AgentResult result) {
+        for (io.github.datallmhub.agentflow4j.core.ToolCallRecord call : result.toolCalls()) {
+            for (AgentListener l : listeners) {
+                try { l.onToolCall(name, node, call); }
+                catch (Exception e) { log.warn("Listener failed on tool call", e); }
+            }
+        }
+    }
+
+    private void notifyApprovalRequired(ApprovalRequest request) {
+        for (AgentListener l : listeners) {
+            try { l.onApprovalRequired(name, request); }
+            catch (Exception e) { log.warn("Listener failed on approval required", e); }
+        }
+    }
+
+    private void notifyBudgetExceeded(String node, InterruptRequest interrupt) {
+        for (AgentListener l : listeners) {
+            try { l.onBudgetExceeded(name, node, interrupt); }
+            catch (Exception e) { log.warn("Listener failed on budget exceeded", e); }
+        }
     }
 
     private void notifyEnter(String node, AgentContext context) {

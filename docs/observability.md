@@ -37,3 +37,32 @@ AgentListener auditListener() {
 ```
 
 Multiple listeners can be registered side-by-side; they are all invoked.
+
+## Lifecycle hooks
+
+Every hook has an empty default, so a listener overrides only what it needs. The same hooks fire from `invoke` and `invokeStream`.
+
+| Hook | Fires when |
+|------|------------|
+| `onNodeEnter` / `onNodeExit` | A node starts / returns |
+| `onNodeError` | A node fails (after retries) |
+| `onTransition` | The graph moves from one node to the next |
+| `onGraphComplete` | The run ends |
+| `onCheckpoint` | A checkpoint has been persisted |
+| `onToolCall` | Once per tool call a node reported, before `onNodeExit` |
+| `onApprovalRequired` | An `ApprovalGate` pauses the run; carries the `ApprovalRequest` |
+| `onBudgetExceeded` | A node is interrupted for budget; the interrupt payload is a `BudgetPolicy.Breach` when the policy refused the call |
+
+A listener that throws is logged and skipped: it never fails the run.
+
+```java
+@Bean
+AgentListener approvalNotifier(SlackClient slack) {
+    return new AgentListener() {
+        @Override
+        public void onApprovalRequired(String graph, ApprovalRequest request) {
+            slack.post("#approvals", request.nodeName() + ": " + request.reason());
+        }
+    };
+}
+```
