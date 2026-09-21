@@ -6,6 +6,7 @@ import java.util.Map;
 import io.github.datallmhub.agentflow4j.core.AgentContext;
 import io.github.datallmhub.agentflow4j.core.InterruptRequest;
 import io.github.datallmhub.agentflow4j.core.StateKey;
+import io.github.datallmhub.agentflow4j.graph.ApprovalGate;
 import io.github.datallmhub.agentflow4j.graph.Checkpoint;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -123,5 +124,16 @@ class JacksonCheckpointCodecTests {
         StateTypeRegistry reg = new StateTypeRegistry().register("x", String.class);
         assertThatThrownBy(() -> reg.register("x", Integer.class))
                 .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void approvalMarkerSurvivesRoundTripWithoutExplicitRegistration() {
+        JacksonCheckpointCodec codec = new JacksonCheckpointCodec(new StateTypeRegistry());
+        AgentContext ctx = AgentContext.of("go")
+                .with(ApprovalGate.APPROVED_KEY, java.util.Set.of("payment.transfer"));
+
+        Checkpoint decoded = codec.decode(codec.encode(new Checkpoint("run-1", "refund", ctx, 1, null)));
+
+        assertThat(decoded.context().get(ApprovalGate.APPROVED_KEY)).containsExactly("payment.transfer");
     }
 }

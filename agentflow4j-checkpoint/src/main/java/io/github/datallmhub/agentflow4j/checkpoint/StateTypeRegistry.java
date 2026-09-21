@@ -6,11 +6,20 @@ import java.util.Objects;
 import java.util.Optional;
 
 import io.github.datallmhub.agentflow4j.core.StateKey;
+import io.github.datallmhub.agentflow4j.graph.ApprovalGate;
 
 public final class StateTypeRegistry {
 
     private final Map<String, Class<?>> byLogicalName = new HashMap<>();
     private final Map<Class<?>, String> byClass = new HashMap<>();
+
+    /**
+     * Pre-registers the framework's own state keys, so that a run resumed via
+     * an {@link ApprovalGate} can be checkpointed again without extra setup.
+     */
+    public StateTypeRegistry() {
+        register(ApprovalGate.APPROVED_KEY);
+    }
 
     public <T> StateTypeRegistry register(String logicalName, Class<T> type) {
         Objects.requireNonNull(logicalName, "logicalName");
