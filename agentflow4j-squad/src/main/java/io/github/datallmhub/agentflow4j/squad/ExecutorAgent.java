@@ -17,6 +17,7 @@ import org.springframework.ai.chat.client.ResponseEntity;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.tool.ToolCallback;
+import org.springframework.ai.tool.ToolCallbackProvider;
 import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -29,6 +30,7 @@ public final class ExecutorAgent implements Agent {
     private final ChatClient chatClient;
     private final String systemPrompt;
     private final List<ToolCallback> tools;
+    private final List<ToolCallbackProvider> toolProviders;
     private final ToolPolicy toolPolicy;
     @Nullable private final StateKey<?> outputKey;
 
@@ -37,6 +39,7 @@ public final class ExecutorAgent implements Agent {
         this.chatClient = Objects.requireNonNull(b.chatClient, "chatClient");
         this.systemPrompt = b.systemPrompt;
         this.tools = List.copyOf(b.tools);
+        this.toolProviders = List.copyOf(b.toolProviders);
         this.toolPolicy = b.toolPolicy;
         this.outputKey = b.outputKey;
     }
@@ -135,10 +138,11 @@ public final class ExecutorAgent implements Agent {
         if (!context.messages().isEmpty()) {
             spec = spec.messages(ensureSafeMessageOrder(context.messages()));
         }
-        if (!tools.isEmpty()) {
-            ToolCallback[] wrapped = new ToolCallback[tools.size()];
-            for (int i = 0; i < tools.size(); i++) {
-                ToolCallback tool = tools.get(i);
+        List<ToolCallback> resolved = resolveTools();
+        if (!resolved.isEmpty()) {
+            ToolCallback[] wrapped = new ToolCallback[resolved.size()];
+            for (int i = 0; i < resolved.size(); i++) {
+                ToolCallback tool = resolved.get(i);
                 if (toolPolicy != ToolPolicy.ALLOW_ALL) {
                     tool = new PolicyToolCallback(tool, toolPolicy);
                 }
@@ -147,6 +151,21 @@ public final class ExecutorAgent implements Agent {
             spec = spec.toolCallbacks(wrapped);
         }
         return spec;
+    }
+
+    /**
+     * Providers are queried on every run rather than once at build time: an
+     * MCP server may add or remove tools while the application is running.
+     */
+    private List<ToolCallback> resolveTools() {
+        if (toolProviders.isEmpty()) {
+            return tools;
+        }
+        List<ToolCallback> all = new ArrayList<>(tools);
+        for (ToolCallbackProvider provider : toolProviders) {
+            all.addAll(List.of(provider.getToolCallbacks()));
+        }
+        return all;
     }
 
     private List<org.springframework.ai.chat.messages.Message> ensureSafeMessageOrder(
@@ -168,6 +187,7 @@ public final class ExecutorAgent implements Agent {
         private ChatClient chatClient;
         private String systemPrompt;
         private final List<ToolCallback> tools = new ArrayList<>();
+        private final List<ToolCallbackProvider> toolProviders = new ArrayList<>();
         private ToolPolicy toolPolicy = ToolPolicy.ALLOW_ALL;
         @Nullable private StateKey<?> outputKey;
 
@@ -198,6 +218,22 @@ public final class ExecutorAgent implements Agent {
         public Builder tools(List<ToolCallback> tools) {
             if (tools != null) {
                 tools.forEach(t -> this.tools.add(Objects.requireNonNull(t, "tool")));
+            }
+            return this;
+        }
+
+        /**
+         * Registers tool providers, such as Spring AI's
+         * {@code SyncMcpToolCallbackProvider}, whose tools go through the
+         * {@link ToolPolicy} and the tool-call audit like any other tool.
+         * Tools registered on the {@link ChatClient} itself (for example via
+         * {@code defaultToolCallbacks}) bypass both.
+         */
+        public Builder toolProviders(ToolCallbackProvider... providers) {
+            if (providers != null) {
+                for (ToolCallbackProvider p : providers) {
+                    this.toolProviders.add(Objects.requireNonNull(p, "provider"));
+                }
             }
             return this;
         }
