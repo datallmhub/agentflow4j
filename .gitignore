@@ -21,3 +21,6 @@ Thumbs.db
 hs_err_pid*
 replay_pid*
 MARKETING_POSTS.md
+
+# MkDocs build output
+site/
