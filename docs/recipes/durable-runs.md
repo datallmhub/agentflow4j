@@ -69,7 +69,7 @@ What happens:
 |---|---|
 | **Transient** (network blip, rate limit) | `RetryPolicy` retries with backoff — `RetryPolicy.exponential(3, Duration.ofMillis(200))`, per-node override, predicate for which exceptions are worth retrying |
 | **Crash mid-run** (JVM dies at step 3 of 5) | `resume(runId)` picks up at step 3; steps 1–2 don't re-run |
-| **Permanent** (bad input, logic error) | `ErrorPolicy` decides: `FAIL_FAST` stops with the error surfaced, `SKIP_NODE` logs and continues, `RETRY_ONCE` tries once more |
+| **Permanent** (bad input, logic error) | `ErrorPolicy` decides: `FAIL_FAST` stops with the error surfaced, `SKIP_NODE` logs and continues |
 
 Combine them: a flaky step retries, a crashed run resumes, an unrecoverable step stops cleanly — and the [run log](../run-log.md) shows exactly which node failed and why.
 

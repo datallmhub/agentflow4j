@@ -9,7 +9,7 @@ import io.github.datallmhub.agentflow4j.core.StateKey;
 import io.github.datallmhub.agentflow4j.graph.AgentGraph;
 import io.github.datallmhub.agentflow4j.graph.AgentListener;
 import io.github.datallmhub.agentflow4j.graph.Edge;
-import io.github.datallmhub.agentflow4j.graph.ErrorPolicy;
+import io.github.datallmhub.agentflow4j.graph.RetryPolicy;
 import io.github.datallmhub.agentflow4j.squad.CoordinatorAgent;
 import io.github.datallmhub.agentflow4j.squad.ExecutorAgent;
 import io.github.datallmhub.agentflow4j.squad.RoutingStrategy;
@@ -200,7 +200,7 @@ public class MistralIntegrationDemo implements CommandLineRunner {
                     .addNode("write", writerWrapped)
                     .addEdge("research", "analyze")
                     .addEdge("analyze", "write")
-                    .errorPolicy(ErrorPolicy.RETRY_ONCE)
+                    .retryPolicy(RetryPolicy.once())
                     .listener(counter)
                     .build();
 

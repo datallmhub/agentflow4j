@@ -16,7 +16,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>A denied mutation surfaces as a {@link StatePolicyViolation} thrown
  * inside the graph runtime, which the configured {@code ErrorPolicy}
- * then handles (FAIL_FAST, RETRY_ONCE, SKIP_NODE).
+ * then handles (FAIL_FAST, SKIP_NODE).
  *
  * <p>This SPI is write-only by design. Reads via {@link io.github.datallmhub.agentflow4j.core.AgentContext#get}
  * are not intercepted — most production governance needs are about

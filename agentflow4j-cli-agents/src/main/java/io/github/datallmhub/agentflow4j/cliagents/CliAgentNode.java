@@ -8,6 +8,7 @@ import io.github.datallmhub.agentflow4j.core.Agent;
 import io.github.datallmhub.agentflow4j.core.AgentContext;
 import io.github.datallmhub.agentflow4j.core.AgentError;
 import io.github.datallmhub.agentflow4j.core.AgentResult;
+import io.github.datallmhub.agentflow4j.core.Experimental;
 import org.springaicommunity.agents.model.AgentModel;
 import org.springaicommunity.agents.model.AgentOptions;
 import org.springaicommunity.agents.model.AgentResponse;
@@ -33,6 +34,7 @@ import org.jspecify.annotations.Nullable;
  * exceptions so the graph's {@code ErrorPolicy} / {@code RetryPolicy} can
  * intervene.
  */
+@Experimental
 public final class CliAgentNode implements Agent {
 
     private final String name;

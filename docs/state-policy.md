@@ -30,7 +30,6 @@ A denied write surfaces as a `StatePolicyViolation` wrapped in an `AgentError`. 
 | Error policy | Behaviour on state denial |
 |---|---|
 | `FAIL_FAST` (default) | Graph stops, returns the failed result with the violation as cause |
-| `RETRY_ONCE` | Node retried; if it still writes the denied key, fails |
 | `SKIP_NODE` | Node's mutations dropped, graph continues at the next edge |
 
 ## Attaching a policy to a graph

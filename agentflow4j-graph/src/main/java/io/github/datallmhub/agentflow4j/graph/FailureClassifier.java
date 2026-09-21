@@ -21,8 +21,8 @@ import org.jspecify.annotations.Nullable;
  * }</pre>
  *
  * <p>Returning {@code null} from {@link #classify(Throwable)} means "I don't
- * know" and lets {@link #orElse(FailureClassifier)} — or the policy's legacy
- * {@code retryOn} predicate — decide instead.
+ * know" and lets {@link #orElse(FailureClassifier)} decide instead; a failure
+ * no classifier recognises is treated as {@link FailureCategory#PERMANENT}.
  */
 @FunctionalInterface
 public interface FailureClassifier {
@@ -59,5 +59,15 @@ public interface FailureClassifier {
      */
     static FailureClassifier defaults() {
         return DefaultFailureClassifier.INSTANCE;
+    }
+
+    /**
+     * Classifies every failure as {@link FailureCategory#TRANSIENT}. Meant as
+     * the last link of an {@link #orElse} chain, so that the failures earlier
+     * classifiers recognise keep their category and only unknown ones are
+     * retried.
+     */
+    static FailureClassifier alwaysTransient() {
+        return cause -> FailureClassification.transientFailure();
     }
 }

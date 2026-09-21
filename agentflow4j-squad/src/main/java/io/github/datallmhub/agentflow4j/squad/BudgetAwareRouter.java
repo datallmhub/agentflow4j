@@ -4,6 +4,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import io.github.datallmhub.agentflow4j.core.AgentContext;
+import io.github.datallmhub.agentflow4j.core.Experimental;
 import io.github.datallmhub.agentflow4j.graph.BudgetPolicy;
 
 /**
@@ -31,6 +32,7 @@ import io.github.datallmhub.agentflow4j.graph.BudgetPolicy;
  * // router sees live spend.
  * }</pre>
  */
+@Experimental
 public final class BudgetAwareRouter implements RoutingStrategy {
 
     private final BudgetPolicy budgetPolicy;

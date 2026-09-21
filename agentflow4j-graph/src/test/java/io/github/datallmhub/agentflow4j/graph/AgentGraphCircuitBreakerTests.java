@@ -68,7 +68,7 @@ class AgentGraphCircuitBreakerTests {
         };
 
         RetryPolicy retry = new RetryPolicy(5, Duration.ZERO, Duration.ZERO, 1.0, 0.0,
-                RetryPredicates.always());
+                FailureClassifier.defaults().orElse(FailureClassifier.alwaysTransient()));
         AgentGraph graph = AgentGraph.builder()
                 .addNode("flaky", failing, retry, breaker)
                 .build();

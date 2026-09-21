@@ -38,20 +38,4 @@ public interface Node {
     static Node of(String name, Agent agent, RetryPolicy retryPolicy, CircuitBreakerPolicy circuitBreaker) {
         return new AgentNode(name, agent, retryPolicy, circuitBreaker);
     }
-
-    record AgentNode(
-            String name,
-            Agent agent,
-            @Nullable RetryPolicy retryPolicy,
-            @Nullable CircuitBreakerPolicy circuitBreaker) implements Node {
-        @Override
-        public AgentResult execute(AgentContext context) {
-            return agent.execute(context);
-        }
-
-        @Override
-        public Flux<AgentEvent> executeStream(AgentContext context) {
-            return agent.executeStream(context);
-        }
-    }
 }

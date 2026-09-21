@@ -145,7 +145,7 @@ class AgentGraphReasonAwareRetryTests {
         RetryPolicy policy = new RetryPolicy(3,
                 Duration.ofSeconds(10), Duration.ofSeconds(10),
                 1.0, 0.0,
-                RetryPredicates.always());
+                FailureClassifier.defaults().orElse(FailureClassifier.alwaysTransient()));
 
         AgentGraph graph = AgentGraph.builder()
                 .addNode("ratelimited", flaky)

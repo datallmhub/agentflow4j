@@ -10,7 +10,7 @@ import io.github.datallmhub.agentflow4j.core.StateKey;
 import io.github.datallmhub.agentflow4j.graph.AgentGraph;
 import io.github.datallmhub.agentflow4j.graph.AgentListener;
 import io.github.datallmhub.agentflow4j.graph.Edge;
-import io.github.datallmhub.agentflow4j.graph.ErrorPolicy;
+import io.github.datallmhub.agentflow4j.graph.RetryPolicy;
 
 /**
  * 03 — Advanced: conditional routing, typed state, error policy, listener.
@@ -129,7 +129,7 @@ public final class AdvancedGraphDemo {
                         "research"))
                 // Otherwise, fall through to write
                 .addEdge("analyze", "write")
-                .errorPolicy(ErrorPolicy.RETRY_ONCE)
+                .retryPolicy(RetryPolicy.once())
                 .listener(logger)
                 .build();
 

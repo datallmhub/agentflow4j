@@ -2,7 +2,7 @@ package io.github.datallmhub.agentflow4j.samples;
 
 import io.github.datallmhub.agentflow4j.core.Agent;
 import io.github.datallmhub.agentflow4j.graph.AgentGraph;
-import io.github.datallmhub.agentflow4j.graph.ErrorPolicy;
+import io.github.datallmhub.agentflow4j.graph.RetryPolicy;
 
 /**
  * Research Squad example (§8 of the spec).
@@ -26,7 +26,7 @@ public final class ResearchSquad {
                 .addEdge("coordinate", "research")
                 .addEdge("research", "analyze")
                 .addEdge("analyze", "write")
-                .errorPolicy(ErrorPolicy.RETRY_ONCE)
+                .retryPolicy(RetryPolicy.once())
                 .build();
     }
 }

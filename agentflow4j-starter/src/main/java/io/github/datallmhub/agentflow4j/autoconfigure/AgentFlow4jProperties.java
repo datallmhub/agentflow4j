@@ -1,5 +1,6 @@
 package io.github.datallmhub.agentflow4j.autoconfigure;
 
+import io.github.datallmhub.agentflow4j.core.Experimental;
 import io.github.datallmhub.agentflow4j.graph.ErrorPolicy;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -48,6 +49,7 @@ public class AgentFlow4jProperties {
         public void setEvents(boolean events) { this.events = events; }
     }
 
+    @Experimental
     public static class Squad {
         public enum DefaultRoutingStrategy { FIRST, LLM_DRIVEN }
 

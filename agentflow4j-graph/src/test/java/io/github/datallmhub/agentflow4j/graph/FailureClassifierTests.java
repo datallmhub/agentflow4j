@@ -38,9 +38,8 @@ class FailureClassifierTests {
 
     @Test
     void plainRuntimeExceptionIsDeclined() {
-        // Unknown exception types are declined (null) so the policy's
-        // retryOn predicate gets the final word — preserves backward compat
-        // for callers that previously relied on `RetryPredicates.always()`.
+        // Unknown exception types are declined (null) so a classifier chained
+        // via orElse can decide; RetryPolicy treats a final null as PERMANENT.
         FailureClassification c = classifier.classify(new IllegalArgumentException("nope"));
         assertThat(c).isNull();
     }
@@ -184,21 +183,20 @@ class FailureClassifierTests {
     }
 
     @Test
-    void retryPolicyClassifyFallsBackToRetryOnPredicateWhenClassifierDeclines() {
-        // A classifier that declines everything → falls back to retryOn predicate
+    void retryPolicyClassifyUsesAlwaysTransientWhenChained() {
         FailureClassifier declining = cause -> null;
         RetryPolicy p = new RetryPolicy(3, Duration.ofMillis(10), Duration.ofMillis(100),
-                2.0, 0.0, RetryPredicates.always(), declining);
+                2.0, 0.0, declining.orElse(FailureClassifier.alwaysTransient()));
 
         FailureClassification c = p.classify(new IllegalArgumentException("x"));
         assertThat(c.category()).isEqualTo(FailureCategory.TRANSIENT);
     }
 
     @Test
-    void retryPolicyClassifyFallsBackToRetryOnFalseWhenClassifierDeclines() {
+    void retryPolicyClassifyIsPermanentWhenClassifierDeclines() {
         FailureClassifier declining = cause -> null;
         RetryPolicy p = new RetryPolicy(3, Duration.ofMillis(10), Duration.ofMillis(100),
-                2.0, 0.0, RetryPredicates.never(), declining);
+                2.0, 0.0, declining);
 
         FailureClassification c = p.classify(new IllegalArgumentException("x"));
         assertThat(c.category()).isEqualTo(FailureCategory.PERMANENT);
