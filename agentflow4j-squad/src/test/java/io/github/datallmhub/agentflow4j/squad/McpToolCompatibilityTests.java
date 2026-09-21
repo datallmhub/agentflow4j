@@ -64,8 +64,10 @@ class McpToolCompatibilityTests {
                 null));
         when(mcpClient.callTool(any())).thenAnswer(inv -> {
             McpSchema.CallToolRequest request = inv.getArgument(0);
-            return new McpSchema.CallToolResult(
-                    List.of(new McpSchema.TextContent(request.name() + " ok")), false);
+            return McpSchema.CallToolResult.builder()
+                    .addTextContent(request.name() + " ok")
+                    .isError(false)
+                    .build();
         });
     }
 
