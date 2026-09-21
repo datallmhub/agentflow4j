@@ -101,6 +101,7 @@ nav:
       - "LLM cost control for Java agents — BudgetPolicy": tutorials/llm-cost-control-java-budget-policy.md
       - "Checkpoint and resume agent workflows in Spring Boot": tutorials/checkpoint-resume-agent-spring-boot.md
   - Testing: testing.md
+  - "Migrating to 0.8": migration-0.8.md
   - Samples: samples.md
   - Cookbook ↗: https://github.com/datallmhub/agentflow4j-cookbook
 
