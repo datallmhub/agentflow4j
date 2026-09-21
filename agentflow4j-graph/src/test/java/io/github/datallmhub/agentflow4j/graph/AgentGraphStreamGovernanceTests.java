@@ -31,7 +31,7 @@ class AgentGraphStreamGovernanceTests {
                 .checkpointStore(store)
                 .build();
 
-        AgentResult result = finalResult(graph.invokeStream(AgentContext.of("transfer 500"), "run-s1"));
+        AgentResult result = finalResult(graph.invokeStream(AgentContext.of("transfer 500"), RunOptions.ofRunId("run-s1")));
 
         assertThat(guardedCalls.get()).isZero();
         assertThat(result.isInterrupted()).isTrue();
@@ -54,8 +54,8 @@ class AgentGraphStreamGovernanceTests {
                 .checkpointStore(store)
                 .build();
 
-        finalResult(graph.invokeStream(AgentContext.of("transfer 500"), "run-s2"));
-        AgentResult resumed = graph.resumeWithApproval("run-s2", "payment.transfer");
+        finalResult(graph.invokeStream(AgentContext.of("transfer 500"), RunOptions.ofRunId("run-s2")));
+        AgentResult resumed = graph.resume("run-s2", ResumeOptions.ofApproval("payment.transfer"));
 
         assertThat(resumed.completed()).isTrue();
         assertThat(resumed.text()).isEqualTo("transferred");
@@ -118,11 +118,30 @@ class AgentGraphStreamGovernanceTests {
                 .runLog(runLog)
                 .build();
 
-        AgentResult result = finalResult(graph.invokeStream(AgentContext.of("go"), "run-s3"));
+        AgentResult result = finalResult(graph.invokeStream(AgentContext.of("go"), RunOptions.ofRunId("run-s3")));
 
         assertThat(nextCalls.get()).isZero();
         assertThat(result.isInterrupted()).isTrue();
         assertThat(graph.runLog("run-s3")).isNotEmpty();
+    }
+
+    @Test
+    void streamFailsBeforeNextNodeOnceTimeoutExceeded() {
+        Agent slow = ctx -> {
+            try { Thread.sleep(150); } catch (InterruptedException ignored) {}
+            return AgentResult.ofText("slow");
+        };
+        AgentGraph graph = AgentGraph.builder()
+                .addNode("a", slow)
+                .addNode("b", ctx -> AgentResult.ofText("b"))
+                .addEdge("a", "b")
+                .build();
+
+        AgentResult result = finalResult(graph.invokeStream(AgentContext.of("go"),
+                RunOptions.ofTimeout(java.time.Duration.ofMillis(50))));
+
+        assertThat(result.hasError()).isTrue();
+        assertThat(result.error().cause()).isInstanceOf(java.util.concurrent.TimeoutException.class);
     }
 
     private static AgentResult finalResult(reactor.core.publisher.Flux<AgentEvent> stream) {

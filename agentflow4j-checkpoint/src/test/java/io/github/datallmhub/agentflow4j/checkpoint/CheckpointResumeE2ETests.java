@@ -12,6 +12,8 @@ import io.github.datallmhub.agentflow4j.core.StateKey;
 import io.github.datallmhub.agentflow4j.graph.AgentGraph;
 import io.github.datallmhub.agentflow4j.graph.Checkpoint;
 import io.github.datallmhub.agentflow4j.graph.CheckpointStore;
+import io.github.datallmhub.agentflow4j.graph.ResumeOptions;
+import io.github.datallmhub.agentflow4j.graph.RunOptions;
 import io.github.datallmhub.agentflow4j.test.MockAgent;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,7 +97,7 @@ class CheckpointResumeE2ETests {
         MockAgent dispatch1 = MockAgent.returning("should not fire in run 1");
 
         AgentResult interrupted = buildGraph(store, plan1, approve1, dispatch1)
-                .invoke(AgentContext.of("ticket-42"), runId);
+                .invoke(AgentContext.of("ticket-42"), RunOptions.ofRunId(runId));
 
         assertThat(interrupted.isInterrupted()).isTrue();
         assertThat(plan1.invocations()).isEqualTo(1);
@@ -119,7 +121,7 @@ class CheckpointResumeE2ETests {
                 .build();
 
         AgentResult completed = buildGraph(store, plan2, approve2, dispatch2)
-                .resume(runId, new UserMessage("approved by alice"));
+                .resume(runId, ResumeOptions.ofMessages(new UserMessage("approved by alice")));
 
         assertThat(plan2.invocations()).isZero();              // plan did not re-enter
         assertThat(approve2.invocations()).isEqualTo(1);       // approve re-entered after resume

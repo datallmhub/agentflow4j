@@ -16,7 +16,6 @@ import io.github.datallmhub.agentflow4j.core.AgentResult;
 import io.github.datallmhub.agentflow4j.core.InterruptRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.chat.messages.Message;
 import org.jspecify.annotations.Nullable;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
@@ -102,15 +101,23 @@ public final class AgentGraph implements Agent {
     }
 
     public AgentResult invoke(AgentContext initial) {
-        Objects.requireNonNull(initial, "initial");
-        return run(initial, entryNode, 0, null, null);
+        return invoke(initial, RunOptions.defaults());
     }
 
-    public AgentResult invoke(AgentContext initial, Duration timeout) {
+    /**
+     * Runs the graph with per-run settings. With a {@link RunOptions#runId() runId},
+     * the run is checkpointed (if a {@link CheckpointStore} is configured) and its
+     * {@link RunLogStore} entries are queryable via {@link #runLog(String)}; neither
+     * store is required.
+     */
+    public AgentResult invoke(AgentContext initial, RunOptions options) {
         Objects.requireNonNull(initial, "initial");
-        Objects.requireNonNull(timeout, "timeout");
-        long deadline = System.nanoTime() + timeout.toNanos();
-        return run(initial, entryNode, 0, null, deadline);
+        Objects.requireNonNull(options, "options");
+        String runId = options.runId();
+        if (runId != null && checkpointStore != null) {
+            checkpointStore.save(new Checkpoint(runId, entryNode, initial, 0, null));
+        }
+        return run(initial, entryNode, 0, runId, deadline(options.timeout()));
     }
 
     @Override
@@ -123,33 +130,43 @@ public final class AgentGraph implements Agent {
         return invokeStream(context);
     }
 
-    /**
-     * Runs the graph under an explicit {@code runId}. The id identifies the
-     * run for both checkpointing (if a {@link CheckpointStore} is configured)
-     * and the {@link RunLogStore} (if one is configured). Neither is required:
-     * with neither store, this behaves like {@link #invoke(AgentContext)} but
-     * with a caller-chosen id usable to query {@link #runLog(String)}.
-     */
-    public AgentResult invoke(AgentContext initial, String runId) {
-        Objects.requireNonNull(initial, "initial");
-        Objects.requireNonNull(runId, "runId");
-        if (checkpointStore != null) {
-            checkpointStore.save(new Checkpoint(runId, entryNode, initial, 0, null));
-        }
-        return run(initial, entryNode, 0, runId, null);
+    public AgentResult resume(String runId) {
+        return resume(runId, ResumeOptions.none());
     }
 
-    public AgentResult resume(String runId, Message... additional) {
+    /**
+     * Continues a checkpointed run from its next node. Nodes listed in
+     * {@link ResumeOptions#approvedNodes()} are marked as approved so the
+     * built-in {@link ApprovalGate} factories ({@link ApprovalGate#requireFor},
+     * {@link ApprovalGate#when}) let them run. A custom gate that ignores
+     * {@link ApprovalGate#APPROVED_KEY} must arrange its own bypass signal.
+     */
+    public AgentResult resume(String runId, ResumeOptions options) {
         Objects.requireNonNull(runId, "runId");
-        CheckpointStore store = requireCheckpointStore();
-        Checkpoint cp = store.load(runId)
+        Objects.requireNonNull(options, "options");
+        Checkpoint cp = requireCheckpointStore().load(runId)
                 .orElseThrow(() -> new IllegalStateException(
                         "No checkpoint found for runId=" + runId));
         AgentContext context = cp.context();
-        if (additional != null && additional.length > 0) {
-            context = context.withMessages(List.of(additional));
+        if (!options.approvedNodes().isEmpty()) {
+            java.util.Set<String> existing = context.get(ApprovalGate.APPROVED_KEY);
+            java.util.Set<String> merged = new java.util.LinkedHashSet<>();
+            if (existing != null) {
+                merged.addAll(existing);
+            }
+            merged.addAll(options.approvedNodes());
+            context = context.with(ApprovalGate.APPROVED_KEY,
+                    java.util.Collections.unmodifiableSet(merged));
+        }
+        if (!options.messages().isEmpty()) {
+            context = context.withMessages(options.messages());
         }
         return run(context, cp.nextNode(), cp.iterations(), runId, null);
+    }
+
+    @Nullable
+    private static Long deadline(@Nullable Duration timeout) {
+        return timeout != null ? System.nanoTime() + timeout.toNanos() : null;
     }
 
     private CheckpointStore requireCheckpointStore() {
@@ -297,27 +314,28 @@ public final class AgentGraph implements Agent {
     }
 
     public Flux<AgentEvent> invokeStream(AgentContext initial) {
-        Objects.requireNonNull(initial, "initial");
-        return stream(initial, null);
+        return invokeStream(initial, RunOptions.defaults());
     }
 
     /**
-     * Streaming counterpart of {@link #invoke(AgentContext, String)}: the run
-     * is checkpointed under {@code runId} (if a {@link CheckpointStore} is
-     * configured) so an approval or budget interrupt can be resumed, and its
-     * {@link RunLogStore} entries are queryable via {@link #runLog(String)}.
+     * Streaming counterpart of {@link #invoke(AgentContext, RunOptions)}: the
+     * same governance applies, and a run started with a
+     * {@link RunOptions#runId() runId} can be continued via
+     * {@link #resume(String, ResumeOptions)} after an interrupt.
      */
-    public Flux<AgentEvent> invokeStream(AgentContext initial, String runId) {
+    public Flux<AgentEvent> invokeStream(AgentContext initial, RunOptions options) {
         Objects.requireNonNull(initial, "initial");
-        Objects.requireNonNull(runId, "runId");
-        return stream(initial, runId);
+        Objects.requireNonNull(options, "options");
+        return stream(initial, options);
     }
 
-    private Flux<AgentEvent> stream(AgentContext initial, @Nullable String runId) {
+    private Flux<AgentEvent> stream(AgentContext initial, RunOptions options) {
         // Flux.create runs the imperative loop (including toIterable() inside tryStream)
         // on the subscriber's thread. subscribeOn(boundedElastic) ensures that thread
         // is always blocking-capable, even when the caller is a Netty/WebFlux event loop.
         return Flux.<AgentEvent>create(sink -> {
+            String runId = options.runId();
+            Long deadlineNanos = deadline(options.timeout());
             CheckpointStore store = checkpointStore;
             RunRecorder recorder = RunRecorder.forRun(
                     runId != null ? runId : java.util.UUID.randomUUID().toString(), runLogStore);
@@ -333,6 +351,16 @@ public final class AgentGraph implements Agent {
                 }
 
                 while (currentNode != null) {
+                    if (deadlineNanos != null && System.nanoTime() > deadlineNanos) {
+                        AgentError err = AgentError.of(currentNode,
+                                new java.util.concurrent.TimeoutException(
+                                        "Graph exceeded timeout before entering node '" + currentNode + "'"));
+                        recorder.error(currentNode, "timeout");
+                        notifyError(currentNode, err);
+                        sink.next(AgentEvent.completed(AgentResult.failed(err)));
+                        sink.complete();
+                        return;
+                    }
                     if (++iterations > maxIterations) {
                         AgentError err = AgentError.of(currentNode,
                                 new IllegalStateException("Max iterations exceeded: " + maxIterations));
@@ -588,8 +616,7 @@ public final class AgentGraph implements Agent {
      * Consults the {@link ApprovalGate} before a node runs. Returns
      * {@code null} when execution may proceed, otherwise an interrupted
      * {@link AgentResult} that the caller resumes via
-     * {@link #resumeWithApproval(String, String,
-     * org.springframework.ai.chat.messages.Message...)}.
+     * {@link #resume(String, ResumeOptions)}.
      */
     @Nullable
     private AgentResult gateApproval(String nodeName, AgentContext context) {
@@ -608,40 +635,6 @@ public final class AgentGraph implements Agent {
         InterruptRequest interrupt = new InterruptRequest(
                 "approval.required:" + nodeName, request);
         return AgentResult.interrupted(interrupt);
-    }
-
-    /**
-     * Resumes a run that was paused by an {@link ApprovalGate}, marking
-     * {@code approvedNode} as approved so the gate's default factories
-     * bypass it on the next attempt. Additional messages, if any, are
-     * appended to the context before the run continues.
-     *
-     * <p>Custom {@link ApprovalGate} implementations that ignore
-     * {@link ApprovalGate#APPROVED_KEY} must arrange their own bypass
-     * signal — the marker is only honoured by the built-in factories
-     * ({@link ApprovalGate#requireFor}, {@link ApprovalGate#when}).
-     */
-    public AgentResult resumeWithApproval(String runId, String approvedNode,
-                                          org.springframework.ai.chat.messages.Message... additional) {
-        Objects.requireNonNull(runId, "runId");
-        Objects.requireNonNull(approvedNode, "approvedNode");
-        CheckpointStore store = requireCheckpointStore();
-        Checkpoint cp = store.load(runId)
-                .orElseThrow(() -> new IllegalStateException(
-                        "No checkpoint found for runId=" + runId));
-        AgentContext context = cp.context();
-        java.util.Set<String> existing = context.get(ApprovalGate.APPROVED_KEY);
-        java.util.Set<String> merged = new java.util.LinkedHashSet<>();
-        if (existing != null) {
-            merged.addAll(existing);
-        }
-        merged.add(approvedNode);
-        context = context.with(ApprovalGate.APPROVED_KEY,
-                java.util.Collections.unmodifiableSet(merged));
-        if (additional != null && additional.length > 0) {
-            context = context.withMessages(List.of(additional));
-        }
-        return run(context, cp.nextNode(), cp.iterations(), runId, null);
     }
 
     /**

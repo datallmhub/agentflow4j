@@ -26,7 +26,7 @@ class AgentGraphApprovalGateTests {
                 .checkpointStore(store)
                 .build();
 
-        AgentResult result = graph.invoke(AgentContext.of("transfer 500"), "run-1");
+        AgentResult result = graph.invoke(AgentContext.of("transfer 500"), RunOptions.ofRunId("run-1"));
 
         assertThat(guardedCalls.get()).isZero();
         assertThat(result.isInterrupted()).isTrue();
@@ -40,7 +40,7 @@ class AgentGraphApprovalGateTests {
     }
 
     @Test
-    void resumeWithApprovalBypassesGateAndCompletesNode() {
+    void resumeWithApprovedNodeBypassesGateAndCompletesNode() {
         AtomicInteger guardedCalls = new AtomicInteger();
         Agent guarded = ctx -> {
             guardedCalls.incrementAndGet();
@@ -55,12 +55,12 @@ class AgentGraphApprovalGateTests {
                 .build();
 
         // First run: paused
-        AgentResult paused = graph.invoke(AgentContext.of("transfer 500"), "run-2");
+        AgentResult paused = graph.invoke(AgentContext.of("transfer 500"), RunOptions.ofRunId("run-2"));
         assertThat(paused.isInterrupted()).isTrue();
         assertThat(guardedCalls.get()).isZero();
 
         // Human approves and resumes
-        AgentResult resumed = graph.resumeWithApproval("run-2", "payment.transfer");
+        AgentResult resumed = graph.resume("run-2", ResumeOptions.ofApproval("payment.transfer"));
 
         assertThat(resumed.completed()).isTrue();
         assertThat(resumed.text()).isEqualTo("transferred");
@@ -82,16 +82,16 @@ class AgentGraphApprovalGateTests {
                 .build();
 
         // First call paused on transfer
-        graph.invoke(AgentContext.of("go"), "run-3");
+        graph.invoke(AgentContext.of("go"), RunOptions.ofRunId("run-3"));
         // Approve transfer, run continues, then pauses again on refund
-        AgentResult second = graph.resumeWithApproval("run-3", "payment.transfer");
+        AgentResult second = graph.resume("run-3", ResumeOptions.ofApproval("payment.transfer"));
 
         assertThat(second.isInterrupted()).isTrue();
         ApprovalRequest req = (ApprovalRequest) second.interrupt().payload();
         assertThat(req.nodeName()).isEqualTo("refund.process");
 
         // Approve refund as well, now it completes
-        AgentResult third = graph.resumeWithApproval("run-3", "refund.process");
+        AgentResult third = graph.resume("run-3", ResumeOptions.ofApproval("refund.process"));
         assertThat(third.completed()).isTrue();
         assertThat(third.text()).isEqualTo("refunded");
     }
@@ -104,7 +104,7 @@ class AgentGraphApprovalGateTests {
                 .build();
 
         try {
-            graph.resumeWithApproval("missing-run", "a");
+            graph.resume("missing-run", ResumeOptions.ofApproval("a"));
             assertThat(false).as("expected IllegalStateException").isTrue();
         }
         catch (IllegalStateException expected) {

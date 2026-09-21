@@ -35,7 +35,7 @@ AgentGraph graph = AgentGraph.builder()
         .checkpointStore(store)
         .build();
 
-AgentResult result = graph.invoke(AgentContext.of("ticket-42"), "run-42");
+AgentResult result = graph.invoke(AgentContext.of("ticket-42"), RunOptions.ofRunId("run-42"));
 ```
 
 `plan` runs and writes `ROUTE=team-A` to state. `approve` returns `AgentResult.interrupted("need human approval")`. The graph persists a checkpoint whose `nextNode` is `approve`, with the state captured, and returns — `dispatch` never fires.
@@ -52,7 +52,7 @@ The checkpoint is the only thing that needs to survive. You can rebuild the grap
 
 ```java
 // fresh JVM, brand-new AgentGraph + agents, same CheckpointStore
-AgentResult done = graph.resume("run-42", new UserMessage("approved by alice"));
+AgentResult done = graph.resume("run-42", ResumeOptions.ofMessages(new UserMessage("approved by alice")));
 
 done.text();   // "dispatched to team-A"
 ```

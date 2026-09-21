@@ -14,7 +14,7 @@ ticket comes in  →  graph.invoke()  →  gate fires on "refund.process"
                        process exits, no thread held
 
 human clicks link  →  GET /approve/{runId}/{node}
-                  →  graph.resumeWithApproval(runId, node)
+                  →  graph.resume(runId, ResumeOptions.ofApproval(node))
                   →  refund.process runs from the checkpoint
                   →  customer gets the refund
 ```
@@ -37,7 +37,7 @@ public class SupportApp {
     @PostMapping("/tickets")
     String submit(@RequestBody String body) {
         String runId = UUID.randomUUID().toString();
-        AgentResult result = graph.invoke(AgentContext.of(body), runId);
+        AgentResult result = graph.invoke(AgentContext.of(body), RunOptions.ofRunId(runId));
 
         if (result.isInterrupted()) {
             ApprovalRequest req = (ApprovalRequest) result.interrupt().payload();
@@ -49,7 +49,7 @@ public class SupportApp {
 
     @GetMapping("/approve/{runId}/{node}")
     String approve(@PathVariable String runId, @PathVariable String node) {
-        AgentResult result = graph.resumeWithApproval(runId, node);
+        AgentResult result = graph.resume(runId, ResumeOptions.ofApproval(node));
         return result.completed() ? "done: " + result.text() : "still running";
     }
 
@@ -95,7 +95,7 @@ That is the entire integration. No background queue, no separate worker, no UI. 
 The recipe stops at "it works". Three things to add when you put this in front of real customers:
 
 - **Authenticate the approve link.** Wrap the URL with a signed token (JWT, HMAC) and check it on `/approve`. Otherwise anyone with the link can approve.
-- **Idempotency.** If the human double-clicks, the second `resumeWithApproval` will run the node again. Either short-circuit when `cp.interrupt() == null` (already resumed) or make the downstream node idempotent.
+- **Idempotency.** If the human double-clicks, the second `resume` will run the node again. Either short-circuit when `cp.interrupt() == null` (already resumed) or make the downstream node idempotent.
 - **Reject path.** Add `GET /reject/{runId}/{node}` that calls `store.delete(runId)` or transitions the workflow elsewhere. Right now "not approving" just means the checkpoint sits there.
 
 For richer Slack UX (block kit buttons, interactivity payloads), the same pattern applies — the only thing that changes is `SlackNotifier`. The graph side stays identical.

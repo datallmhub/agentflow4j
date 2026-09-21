@@ -19,9 +19,9 @@ import org.jspecify.annotations.Nullable;
  * an {@link io.github.datallmhub.agentflow4j.core.InterruptRequest},
  * persists a checkpoint, and returns an interrupted {@code AgentResult}.
  * A human (or upstream system) then calls
- * {@link AgentGraph#resumeWithApproval(String, String,
- * org.springframework.ai.chat.messages.Message...)} to mark the node as
- * approved and continue from the checkpoint.
+ * {@link AgentGraph#resume(String, ResumeOptions)} with
+ * {@link ResumeOptions#ofApproval(String)} to mark the node as approved and
+ * continue from the checkpoint.
  *
  * <p>The default factories ({@link #requireFor}, {@link #when}) automatically
  * bypass the gate when the approval marker for that node is present in the

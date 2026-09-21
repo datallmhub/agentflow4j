@@ -26,7 +26,7 @@ class RunLogTests {
                 .runLog(store)
                 .build();
 
-        graph.invoke(AgentContext.of("go"), "run-1");
+        graph.invoke(AgentContext.of("go"), RunOptions.ofRunId("run-1"));
 
         List<AgentRunEvent> events = graph.runLog("run-1");
         List<RunEventType> types = events.stream().map(AgentRunEvent::type).toList();
@@ -54,7 +54,7 @@ class RunLogTests {
                 .runLog(new InMemoryRunLogStore())
                 .build();
 
-        graph.invoke(AgentContext.of("go"), "run-2");
+        graph.invoke(AgentContext.of("go"), RunOptions.ofRunId("run-2"));
 
         AgentRunEvent transition = graph.runLog("run-2").stream()
                 .filter(e -> e.type() == RunEventType.TRANSITION)
@@ -73,7 +73,7 @@ class RunLogTests {
                 .runLog(new InMemoryRunLogStore())
                 .build();
 
-        graph.invoke(AgentContext.of("go"), "run-3");
+        graph.invoke(AgentContext.of("go"), RunOptions.ofRunId("run-3"));
 
         List<RunEventType> types = graph.runLog("run-3").stream()
                 .map(AgentRunEvent::type).toList();
@@ -92,7 +92,7 @@ class RunLogTests {
                 .runLog(new InMemoryRunLogStore())
                 .build();
 
-        graph.invoke(AgentContext.of("go"), "run-4");
+        graph.invoke(AgentContext.of("go"), RunOptions.ofRunId("run-4"));
 
         List<RunEventType> types = graph.runLog("run-4").stream()
                 .map(AgentRunEvent::type).toList();
@@ -108,7 +108,7 @@ class RunLogTests {
                 .runLog(new InMemoryRunLogStore())
                 .build();
 
-        graph.invoke(AgentContext.of("go"), "run-5");
+        graph.invoke(AgentContext.of("go"), RunOptions.ofRunId("run-5"));
 
         AgentRunEvent approval = graph.runLog("run-5").stream()
                 .filter(e -> e.type() == RunEventType.APPROVAL_REQUIRED)
@@ -123,7 +123,7 @@ class RunLogTests {
                 .addNode("a", ctx -> AgentResult.ofText("a"))
                 .build();
 
-        AgentResult result = graph.invoke(AgentContext.of("go"), "run-6");
+        AgentResult result = graph.invoke(AgentContext.of("go"), RunOptions.ofRunId("run-6"));
 
         assertThat(result.completed()).isTrue();
         assertThat(graph.runLog("run-6")).isEmpty();
@@ -145,8 +145,8 @@ class RunLogTests {
                 .runLog(store)
                 .build();
 
-        graph.invoke(AgentContext.of("go"), "alpha");
-        graph.invoke(AgentContext.of("go"), "beta");
+        graph.invoke(AgentContext.of("go"), RunOptions.ofRunId("alpha"));
+        graph.invoke(AgentContext.of("go"), RunOptions.ofRunId("beta"));
 
         assertThat(store.runIds()).containsExactlyInAnyOrder("alpha", "beta");
     }
