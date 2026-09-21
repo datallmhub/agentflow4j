@@ -47,17 +47,17 @@
         <assertj.version>3.27.7</assertj.version>
         <mockito.version>5.11.0</mockito.version>
 
-        <!-- Single security pin: Boot 3.5.14 ships tomcat 10.1.54, one patch
-             behind the fix (10.1.55) for several critical/high tomcat-embed
-             advisories. Same 10.1.x line — drop this once Boot pins 10.1.55+. -->
-        <tomcat.version>10.1.57</tomcat.version>
+        <!-- Security pins ahead of the Boot / Spring AI BOMs, each on the line
+             the BOM already uses. Drop a pin once the BOM ships that version. -->
+        <tomcat.version>10.1.60</tomcat.version>
+        <jackson-bom.version>2.21.5</jackson-bom.version>
+        <log4j2.version>2.25.5</log4j2.version>
+        <mcp.version>1.0.0</mcp.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!-- Security pin ahead of the Boot BOM: tomcat 10.1.55 fixes
-                 critical/high tomcat-embed advisories that 10.1.54 (Boot 3.5.14's
-                 default) is still exposed to. Stays on the 10.1.x line. -->
+            <!-- Security pins: declared before the Boot and Spring AI BOMs so they win. -->
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
@@ -72,6 +72,28 @@
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-websocket</artifactId>
                 <version>${tomcat.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-bom</artifactId>
+                <version>${log4j2.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.modelcontextprotocol.sdk</groupId>
+                <artifactId>mcp-bom</artifactId>
+                <version>${mcp.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <dependency>
