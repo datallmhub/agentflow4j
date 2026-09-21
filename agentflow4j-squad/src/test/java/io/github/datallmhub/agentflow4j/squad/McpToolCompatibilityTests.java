@@ -17,6 +17,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
@@ -25,6 +27,8 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.mcp.McpToolUtils;
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
+import org.springframework.ai.model.tool.ToolCallingManager;
+import org.springframework.ai.model.tool.ToolExecutionResult;
 import org.springframework.ai.tool.ToolCallback;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -80,6 +84,11 @@ class McpToolCompatibilityTests {
         assertThat(result.toolCalls().get(0).success()).isTrue();
         assertThat(result.toolCalls().get(0).arguments()).containsEntry("orderId", "42");
         assertThat(result.toolCalls().get(1).success()).isFalse();
+        assertThat(result.toolCalls().get(1).error()).startsWith("ToolPolicyViolation: tool policy denied");
+        assertThat(result.hasError()).isFalse();
+        assertThat(model.toolResults).containsExactly(
+                LOOKUP + " -> [{\"text\":\"lookup_order ok\"}]",
+                REFUND + " -> tool policy denied call to '" + REFUND + "': tool '" + REFUND + "' is denied");
         verify(mcpClient, never()).callTool(new McpSchema.CallToolRequest("refund_order", Map.of("orderId", "42")));
     }
 
@@ -125,13 +134,15 @@ class McpToolCompatibilityTests {
     }
 
     /**
-     * Stands in for a provider model with internal tool execution: it calls
-     * each scripted tool it was offered, then answers with plain text.
+     * Stands in for a provider model with internal tool execution: it requests
+     * each scripted tool, lets Spring AI's {@link ToolCallingManager} run them
+     * exactly as a real provider does, then answers with plain text.
      */
     private static final class ToolCallingModel implements ChatModel {
 
         private final List<String> toolsToCall;
         final List<List<String>> offeredTools = new ArrayList<>();
+        final List<String> toolResults = new ArrayList<>();
 
         ToolCallingModel(List<String> toolsToCall) {
             this.toolsToCall = toolsToCall;
@@ -147,22 +158,20 @@ class McpToolCompatibilityTests {
             List<ToolCallback> offered = prompt.getOptions() instanceof ToolCallingChatOptions options
                     ? options.getToolCallbacks() : List.of();
             offeredTools.add(offered.stream().map(t -> t.getToolDefinition().name()).toList());
-            for (String name : toolsToCall) {
-                offered.stream()
-                        .filter(t -> t.getToolDefinition().name().equals(name))
-                        .findFirst()
-                        .ifPresent(t -> callSwallowingDenial(t));
+            if (!toolsToCall.isEmpty()) {
+                List<AssistantMessage.ToolCall> calls = toolsToCall.stream()
+                        .map(name -> new AssistantMessage.ToolCall("call-" + name, "function", name,
+                                "{\"orderId\":\"42\"}"))
+                        .toList();
+                ChatResponse toolRequest = new ChatResponse(List.of(
+                        new Generation(new AssistantMessage("", Map.of(), calls))));
+                ToolExecutionResult execution = ToolCallingManager.builder().build()
+                        .executeToolCalls(prompt, toolRequest);
+                List<Message> history = execution.conversationHistory();
+                ToolResponseMessage responses = (ToolResponseMessage) history.get(history.size() - 1);
+                responses.getResponses().forEach(r -> toolResults.add(r.name() + " -> " + r.responseData()));
             }
             return new ChatResponse(List.of(new Generation(new AssistantMessage("done"))));
-        }
-
-        private static void callSwallowingDenial(ToolCallback tool) {
-            try {
-                tool.call("{\"orderId\":\"42\"}");
-            }
-            catch (RuntimeException denied) {
-                // A real model would receive the error as the tool result and carry on.
-            }
         }
     }
 }

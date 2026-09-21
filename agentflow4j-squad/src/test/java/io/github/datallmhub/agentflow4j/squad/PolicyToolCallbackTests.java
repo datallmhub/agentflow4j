@@ -7,6 +7,7 @@ import io.github.datallmhub.agentflow4j.graph.ToolPolicyViolation;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
+import org.springframework.ai.tool.execution.ToolExecutionException;
 import org.springframework.ai.tool.metadata.ToolMetadata;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,8 +42,9 @@ class PolicyToolCallbackTests {
                 ToolPolicy.denyList("shell.execute"));
 
         assertThatThrownBy(() -> callback.call("{\"cmd\":\"rm -rf /\"}"))
-                .isInstanceOf(ToolPolicyViolation.class)
-                .hasMessageContaining("shell.execute");
+                .isInstanceOf(ToolExecutionException.class)
+                .hasCauseInstanceOf(ToolPolicyViolation.class)
+                .hasMessageStartingWith("tool policy denied call to 'shell.execute'");
         assertThat(delegateCalled).isFalse();
     }
 
@@ -57,12 +59,13 @@ class PolicyToolCallbackTests {
 
         try {
             callback.call("{\"amount\":5000}");
-            assertThat(false).as("expected ToolPolicyViolation").isTrue();
+            assertThat(false).as("expected ToolExecutionException").isTrue();
         }
-        catch (ToolPolicyViolation ex) {
-            assertThat(ex.toolName()).isEqualTo("payment.transfer");
-            assertThat(ex.arguments()).containsEntry("amount", 5000);
-            assertThat(ex.reason()).isEqualTo("amount above 1000 requires approval");
+        catch (ToolExecutionException ex) {
+            ToolPolicyViolation violation = (ToolPolicyViolation) ex.getCause();
+            assertThat(violation.toolName()).isEqualTo("payment.transfer");
+            assertThat(violation.arguments()).containsEntry("amount", 5000);
+            assertThat(violation.reason()).isEqualTo("amount above 1000 requires approval");
         }
     }
 

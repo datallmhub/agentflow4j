@@ -33,7 +33,7 @@ Spring AI prefixes each MCP tool with the client name: tool `refund_order` serve
 
 | Concern | Behaviour for MCP tools |
 |---|---|
-| `ToolPolicy` | Checked before the call reaches the MCP server; a denied call never leaves the process |
+| `ToolPolicy` | Checked before the call reaches the MCP server; a denied call never leaves the process and the model receives the denial reason as the tool result |
 | Audit | Every call, allowed or denied, is a `ToolCallRecord` on the node's `AgentResult` |
 | Listeners | `AgentListener.onToolCall` fires once per call |
 | Streaming | `AgentEvent.ToolCallStart` / `ToolCallEnd` are emitted from `invokeStream` |
