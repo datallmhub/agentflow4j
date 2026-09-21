@@ -8,6 +8,7 @@ import io.github.datallmhub.agentflow4j.core.ToolCallRecord;
 import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
+import org.springframework.ai.tool.execution.ToolExecutionException;
 import org.springframework.ai.tool.metadata.ToolMetadata;
 import org.springframework.ai.util.json.JsonParser;
 import org.jspecify.annotations.Nullable;
@@ -60,7 +61,7 @@ final class RecordingToolCallback implements ToolCallback {
             return result;
         } catch (RuntimeException ex) {
             long durationMs = elapsedMs(start);
-            collector.onEnd(ToolCallRecord.failure(sequence, name, arguments, describe(ex), durationMs));
+            collector.onEnd(ToolCallRecord.failure(sequence, name, arguments, describe(unwrap(ex)), durationMs));
             throw ex;
         }
     }
@@ -79,6 +80,11 @@ final class RecordingToolCallback implements ToolCallback {
 
     private static long elapsedMs(long startNanos) {
         return (System.nanoTime() - startNanos) / 1_000_000L;
+    }
+
+    /** Spring AI's ToolExecutionException is a carrier; the audit wants the underlying failure. */
+    private static Throwable unwrap(RuntimeException ex) {
+        return ex instanceof ToolExecutionException && ex.getCause() != null ? ex.getCause() : ex;
     }
 
     private static String describe(Throwable t) {

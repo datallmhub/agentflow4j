@@ -1,6 +1,6 @@
 # Migrating from 0.7 to 0.8
 
-0.8 is the API stabilisation release on the road to 1.0: it removes duplicated and legacy entry points so that the 1.0 API can be frozen. Every change below is a compile error, not a silent behaviour change, except the two flagged **Behaviour**.
+0.8 is the API stabilisation release on the road to 1.0: it removes duplicated and legacy entry points so that the 1.0 API can be frozen. Every change below is a compile error, not a silent behaviour change, except the three flagged **Behaviour**.
 
 ## `AgentGraph` run and resume options
 
@@ -40,6 +40,12 @@ Retry decisions are made by the `FailureClassifier` only.
 | custom `Predicate<Throwable>` | `cause -> matches(cause) ? FailureClassification.transientFailure() : null` |
 
 **Behaviour:** a failure that no classifier recognises is now `PERMANENT`. `RetryPolicy.once().withClassifier(custom)` no longer retries unknown failures unless `custom` ends with `.orElse(FailureClassifier.alwaysTransient())`.
+
+## Denied tool calls no longer fail the node
+
+**Behaviour:** in 0.7, a call refused by `ToolPolicy` threw `ToolPolicyViolation`, which Spring AI does not handle: the whole `ChatClient` call failed, the node failed, and the tool calls recorded so far were lost. In 0.8 the denial is a `ToolExecutionException` whose cause is the `ToolPolicyViolation`: the model receives the denial reason as the tool result and carries on, and the denied attempt stays in `AgentResult.toolCalls()`.
+
+If you caught `ToolPolicyViolation` around a tool callback, catch `ToolExecutionException` and read `getCause()`. To stop the run on a denial, route on the failed `ToolCallRecord` with an `Edge.onResult`.
 
 ## Internal types no longer public
 

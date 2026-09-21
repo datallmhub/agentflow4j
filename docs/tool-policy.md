@@ -25,7 +25,7 @@ public interface ToolPolicy {
 }
 ```
 
-`Decision` carries `allowed` plus a denial reason. When denied, the wrapping `ToolCallback` throws `ToolPolicyViolation`, which Spring AI surfaces as a failed tool call — the model sees the error and can react (retry, ask for help, skip).
+`Decision` carries `allowed` plus a denial reason. When denied, the wrapping `ToolCallback` throws Spring AI's `ToolExecutionException` with the `ToolPolicyViolation` as its cause. Spring AI returns the denial reason to the model as the tool result, so the model can react (explain, ask for help, try something else), and the denied attempt is recorded as a failed `ToolCallRecord`. The real tool is never invoked.
 
 ## Attaching a policy to an executor
 

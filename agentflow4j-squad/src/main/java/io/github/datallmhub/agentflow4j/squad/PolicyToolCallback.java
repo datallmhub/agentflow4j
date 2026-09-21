@@ -10,12 +10,16 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.definition.ToolDefinition;
+import org.springframework.ai.tool.execution.ToolExecutionException;
 import org.springframework.ai.tool.metadata.ToolMetadata;
 import org.springframework.ai.util.json.JsonParser;
 
 /**
  * Wraps a Spring AI {@link ToolCallback} and consults a {@link ToolPolicy}
- * before invoking it. A denied call throws {@link ToolPolicyViolation}.
+ * before invoking it. A denied call throws a {@link ToolExecutionException}
+ * whose cause is the {@link ToolPolicyViolation}: Spring AI hands that back
+ * to the model as the tool result, so the model learns the call was refused
+ * and can answer accordingly, while the delegate is never invoked.
  *
  * <p>Stacked with {@link RecordingToolCallback}, the order is
  * {@code Recording(Policy(real))} so denied attempts are captured by the
@@ -59,8 +63,8 @@ final class PolicyToolCallback implements ToolCallback {
         Map<String, Object> arguments = parseArgs(raw);
         ToolPolicy.Decision decision = policy.check(name, arguments);
         if (decision.denied()) {
-            throw new ToolPolicyViolation(name, arguments,
-                    decision.reason() != null ? decision.reason() : "denied");
+            throw new PolicyDenial(delegate.getToolDefinition(), new ToolPolicyViolation(name, arguments,
+                    decision.reason() != null ? decision.reason() : "denied"));
         }
         return toolContext == null
                 ? delegate.call(raw)
@@ -76,6 +80,19 @@ final class PolicyToolCallback implements ToolCallback {
             return parsed == null ? Map.of() : parsed;
         } catch (Exception ex) {
             return Map.of("_raw", input);
+        }
+    }
+
+    /** Surfaces the violation's own message, which is what the model reads. */
+    static final class PolicyDenial extends ToolExecutionException {
+
+        PolicyDenial(ToolDefinition tool, ToolPolicyViolation violation) {
+            super(tool, violation);
+        }
+
+        @Override
+        public String getMessage() {
+            return getCause().getMessage();
         }
     }
 }
