@@ -16,7 +16,7 @@
     <description>Bridge module: wrap spring-ai-community AgentModel as a agentflow4j Agent so external CLI agents (Claude Code, Codex, Gemini, ...) become nodes in an AgentGraph.</description>
 
     <properties>
-        <agent-client.version>0.15.0</agent-client.version>
+        <agent-client.version>0.16.0</agent-client.version>
     </properties>
 
     <dependencies>
