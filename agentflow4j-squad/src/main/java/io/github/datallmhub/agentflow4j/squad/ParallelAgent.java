@@ -17,7 +17,9 @@ import io.github.datallmhub.agentflow4j.core.AgentContext;
 import io.github.datallmhub.agentflow4j.core.AgentError;
 import io.github.datallmhub.agentflow4j.core.AgentResult;
 import io.github.datallmhub.agentflow4j.core.AgentUsage;
+import io.github.datallmhub.agentflow4j.core.Experimental;
 
+@Experimental
 public final class ParallelAgent implements Agent {
 
     public static final int DEFAULT_MAX_CONCURRENCY = 8;

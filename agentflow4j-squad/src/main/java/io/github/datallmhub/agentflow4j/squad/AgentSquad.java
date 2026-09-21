@@ -2,12 +2,14 @@ package io.github.datallmhub.agentflow4j.squad;
 
 import org.springframework.ai.chat.client.ChatClient;
 import io.github.datallmhub.agentflow4j.core.AgentContext;
+import io.github.datallmhub.agentflow4j.core.Experimental;
 
 import java.util.UUID;
 
 /**
  * A zero-friction facade for building and running a multi-agent squad.
  */
+@Experimental
 public final class AgentSquad {
 
     private final CoordinatorAgent coordinator;
