@@ -51,6 +51,8 @@
              the BOM already uses. Drop a pin once the BOM ships that version. -->
         <tomcat.version>10.1.60</tomcat.version>
         <jackson-bom.version>2.21.5</jackson-bom.version>
+        <!-- Jackson 3 comes in with the MCP SDK 1.0 (mcp-json-jackson3), which asks for 3.0.x. -->
+        <jackson3-bom.version>3.1.6</jackson3-bom.version>
         <log4j2.version>2.25.5</log4j2.version>
         <mcp.version>1.0.0</mcp.version>
     </properties>
@@ -78,6 +80,13 @@
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
                 <version>${jackson-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson3-bom.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
