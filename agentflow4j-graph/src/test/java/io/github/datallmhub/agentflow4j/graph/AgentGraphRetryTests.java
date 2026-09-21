@@ -27,7 +27,8 @@ class AgentGraphRetryTests {
         AgentGraph graph = AgentGraph.builder()
                 .addNode("flaky", flaky)
                 .retryPolicy(new RetryPolicy(3, Duration.ZERO, Duration.ZERO, 1.0, 0.0,
-                        t -> t instanceof java.io.UncheckedIOException))
+                        t -> t instanceof java.io.UncheckedIOException
+                                ? FailureClassification.transientFailure() : null))
                 .build();
 
         AgentResult result = graph.invoke(AgentContext.of("go"));
@@ -47,7 +48,7 @@ class AgentGraphRetryTests {
         AgentGraph graph = AgentGraph.builder()
                 .addNode("broken", broken)
                 .retryPolicy(new RetryPolicy(5, Duration.ZERO, Duration.ZERO, 1.0, 0.0,
-                        RetryPredicates.transientIo()))
+                        FailureClassifier.defaults()))
                 .build();
 
         AgentResult result = graph.invoke(AgentContext.of("go"));
@@ -88,7 +89,7 @@ class AgentGraphRetryTests {
                 .addEdge("f", "after")
                 .errorPolicy(ErrorPolicy.SKIP_NODE)
                 .retryPolicy(new RetryPolicy(3, Duration.ZERO, Duration.ZERO, 1.0, 0.0,
-                        RetryPredicates.always()))
+                        FailureClassifier.defaults().orElse(FailureClassifier.alwaysTransient())))
                 .build();
 
         AgentResult result = graph.invoke(AgentContext.of("go"));
@@ -108,7 +109,7 @@ class AgentGraphRetryTests {
         };
 
         RetryPolicy nodeRetry = new RetryPolicy(3, Duration.ZERO, Duration.ZERO, 1.0, 0.0,
-                RetryPredicates.always());
+                FailureClassifier.defaults().orElse(FailureClassifier.alwaysTransient()));
         AgentGraph graph = AgentGraph.builder()
                 .addNode("flaky", flaky, nodeRetry)
                 .retryPolicy(RetryPolicy.none())
@@ -134,7 +135,7 @@ class AgentGraphRetryTests {
         };
 
         RetryPolicy graphDefault = new RetryPolicy(3, Duration.ZERO, Duration.ZERO, 1.0, 0.0,
-                RetryPredicates.always());
+                FailureClassifier.defaults().orElse(FailureClassifier.alwaysTransient()));
 
         AgentGraph strictFirst = AgentGraph.builder()
                 .addNode("strict", alwaysFailStrict, RetryPolicy.none())

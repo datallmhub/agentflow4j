@@ -34,9 +34,8 @@ final class DefaultFailureClassifier implements FailureClassifier {
      * {@inheritDoc}
      *
      * <p>Returns {@code null} (declines) for exceptions the classifier does
-     * not specifically recognise — this lets the policy's legacy
-     * {@link RetryPolicy#retryOn()} predicate decide for unknown types, and
-     * keeps callers that only set {@code retryOn} working unchanged.
+     * not specifically recognise, so a classifier chained after it via
+     * {@link FailureClassifier#orElse} can decide.
      */
     @Override
     @Nullable
@@ -77,7 +76,7 @@ final class DefaultFailureClassifier implements FailureClassifier {
             }
         }
 
-        // Unknown — decline so the policy's retryOn predicate decides.
+        // Unknown — decline so a chained classifier can decide.
         return null;
     }
 

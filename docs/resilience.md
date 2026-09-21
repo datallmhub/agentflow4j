@@ -81,9 +81,9 @@ RetryPolicy policy = RetryPolicy.exponential(3, Duration.ofSeconds(1))
 `permanent(String reason)`, and `overBudget(String reason)`. The optional
 `reason` is recorded in logs and the audit trail.
 
-> **Backward compatible:** the legacy `retryOn` predicate still works. When the
-> classifier returns `null`, the policy falls back to it — `true` → `TRANSIENT`,
-> `false` → `PERMANENT` — so existing policies keep their exact behaviour.
+A failure that no classifier recognises is `PERMANENT`. To retry unknown
+failures too, end the chain with `FailureClassifier.alwaysTransient()`, as
+`RetryPolicy.once()` does.
 
 ## 2. Structured Error Results
 

@@ -15,29 +15,29 @@ class RetryPolicyTests {
     void noneHasSingleAttemptAndNeverRetries() {
         RetryPolicy p = RetryPolicy.none();
         assertThat(p.maxAttempts()).isEqualTo(1);
-        assertThat(p.retryOn().test(new RuntimeException())).isFalse();
+        assertThat(p.classify(new RuntimeException()).category()).isEqualTo(FailureCategory.PERMANENT);
     }
 
     @Test
     void onceAllowsOneRetryOnAnything() {
         RetryPolicy p = RetryPolicy.once();
         assertThat(p.maxAttempts()).isEqualTo(2);
-        assertThat(p.retryOn().test(new RuntimeException("any"))).isTrue();
+        assertThat(p.classify(new RuntimeException("any")).category()).isEqualTo(FailureCategory.TRANSIENT);
     }
 
     @Test
     void exponentialDefaultsRetryOnTransientIoOnly() {
         RetryPolicy p = RetryPolicy.exponential(3, Duration.ofMillis(100));
         assertThat(p.maxAttempts()).isEqualTo(3);
-        assertThat(p.retryOn().test(new IOException())).isTrue();
-        assertThat(p.retryOn().test(new TimeoutException())).isTrue();
-        assertThat(p.retryOn().test(new IllegalArgumentException())).isFalse();
+        assertThat(p.classify(new IOException()).category()).isEqualTo(FailureCategory.TRANSIENT);
+        assertThat(p.classify(new TimeoutException()).category()).isEqualTo(FailureCategory.TRANSIENT);
+        assertThat(p.classify(new IllegalArgumentException()).category()).isEqualTo(FailureCategory.PERMANENT);
     }
 
     @Test
     void computeDelayGrowsExponentiallyWithoutJitter() {
         RetryPolicy p = new RetryPolicy(5, Duration.ofMillis(100), Duration.ofSeconds(10),
-                2.0, 0.0, RetryPredicates.always());
+                2.0, 0.0, FailureClassifier.defaults());
         assertThat(p.computeDelayMs(1)).isEqualTo(100);
         assertThat(p.computeDelayMs(2)).isEqualTo(200);
         assertThat(p.computeDelayMs(3)).isEqualTo(400);
@@ -47,7 +47,7 @@ class RetryPolicyTests {
     @Test
     void computeDelayRespectsMaxDelayCap() {
         RetryPolicy p = new RetryPolicy(10, Duration.ofMillis(100), Duration.ofMillis(500),
-                2.0, 0.0, RetryPredicates.always());
+                2.0, 0.0, FailureClassifier.defaults());
         assertThat(p.computeDelayMs(1)).isEqualTo(100);
         assertThat(p.computeDelayMs(3)).isEqualTo(400);
         assertThat(p.computeDelayMs(4)).isEqualTo(500);
@@ -57,7 +57,7 @@ class RetryPolicyTests {
     @Test
     void jitterBoundsNeverExceedCapAndNeverGoBelowFloor() {
         RetryPolicy p = new RetryPolicy(3, Duration.ofMillis(1000), Duration.ofMillis(1000),
-                1.0, 0.5, RetryPredicates.always());
+                1.0, 0.5, FailureClassifier.defaults());
         for (int i = 0; i < 100; i++) {
             long d = p.computeDelayMs(1);
             assertThat(d).isBetween(500L, 1000L);
@@ -67,7 +67,7 @@ class RetryPolicyTests {
     @Test
     void jitterFactorOneProducesFullRange() {
         RetryPolicy p = new RetryPolicy(3, Duration.ofMillis(1000), Duration.ofMillis(1000),
-                1.0, 1.0, RetryPredicates.always());
+                1.0, 1.0, FailureClassifier.defaults());
         for (int i = 0; i < 100; i++) {
             long d = p.computeDelayMs(1);
             assertThat(d).isBetween(0L, 1000L);
@@ -76,21 +76,20 @@ class RetryPolicyTests {
 
     @Test
     void validationRejectsInvalidInputs() {
-        assertThatThrownBy(() -> new RetryPolicy(0, Duration.ZERO, Duration.ZERO, 1.0, 0.0, RetryPredicates.always()))
+        assertThatThrownBy(() -> new RetryPolicy(0, Duration.ZERO, Duration.ZERO, 1.0, 0.0, FailureClassifier.defaults()))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new RetryPolicy(2, Duration.ofSeconds(2), Duration.ofSeconds(1), 1.0, 0.0, RetryPredicates.always()))
+        assertThatThrownBy(() -> new RetryPolicy(2, Duration.ofSeconds(2), Duration.ofSeconds(1), 1.0, 0.0, FailureClassifier.defaults()))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new RetryPolicy(2, Duration.ofMillis(1), Duration.ofMillis(1), 0.5, 0.0, RetryPredicates.always()))
+        assertThatThrownBy(() -> new RetryPolicy(2, Duration.ofMillis(1), Duration.ofMillis(1), 0.5, 0.0, FailureClassifier.defaults()))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new RetryPolicy(2, Duration.ofMillis(1), Duration.ofMillis(1), 1.0, 1.5, RetryPredicates.always()))
+        assertThatThrownBy(() -> new RetryPolicy(2, Duration.ofMillis(1), Duration.ofMillis(1), 1.0, 1.5, FailureClassifier.defaults()))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    void predicateHelpersBehaveAsAdvertised() {
-        assertThat(RetryPredicates.never().test(new RuntimeException())).isFalse();
-        assertThat(RetryPredicates.always().test(new RuntimeException())).isTrue();
-        assertThat(RetryPredicates.transientIo().test(new IOException())).isTrue();
-        assertThat(RetryPredicates.transientIo().test(new IllegalStateException())).isFalse();
+    void onceKeepsCategoriesRecognisedByDefaultClassifier() {
+        RetryPolicy p = RetryPolicy.once();
+        assertThat(p.classify(new BudgetExceededException("cap")).category())
+                .isEqualTo(FailureCategory.OVER_BUDGET);
     }
 }
