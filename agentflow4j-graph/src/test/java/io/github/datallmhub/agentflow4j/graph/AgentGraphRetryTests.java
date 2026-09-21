@@ -150,25 +150,4 @@ class AgentGraphRetryTests {
         defaultOnly.invoke(AgentContext.of("go"));
         assertThat(protectedCalls.get()).isEqualTo(3);
     }
-
-    @Test
-    void retryOnceEnumStillWorksAsCompatibilityShim() {
-        AtomicInteger calls = new AtomicInteger();
-        Agent flaky = ctx -> {
-            int n = calls.incrementAndGet();
-            if (n == 1) {
-                throw new RuntimeException("first time fails");
-            }
-            return AgentResult.ofText("ok");
-        };
-
-        AgentGraph graph = AgentGraph.builder()
-                .addNode("flaky", flaky)
-                .errorPolicy(ErrorPolicy.RETRY_ONCE)
-                .build();
-
-        AgentResult result = graph.invoke(AgentContext.of("go"));
-        assertThat(result.completed()).isTrue();
-        assertThat(calls.get()).isEqualTo(2);
-    }
 }

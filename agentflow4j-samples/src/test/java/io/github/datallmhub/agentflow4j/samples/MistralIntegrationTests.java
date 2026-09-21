@@ -11,7 +11,7 @@ import io.github.datallmhub.agentflow4j.core.ToolCallRecord;
 import io.github.datallmhub.agentflow4j.graph.AgentGraph;
 import io.github.datallmhub.agentflow4j.graph.AgentListener;
 import io.github.datallmhub.agentflow4j.graph.Edge;
-import io.github.datallmhub.agentflow4j.graph.ErrorPolicy;
+import io.github.datallmhub.agentflow4j.graph.RetryPolicy;
 import io.github.datallmhub.agentflow4j.squad.CoordinatorAgent;
 import io.github.datallmhub.agentflow4j.squad.ExecutorAgent;
 import io.github.datallmhub.agentflow4j.squad.RoutingStrategy;
@@ -119,7 +119,7 @@ class MistralIntegrationTests {
                 .addNode("write", writer)
                 .addEdge("research", "analyze")
                 .addEdge("analyze", "write")
-                .errorPolicy(ErrorPolicy.RETRY_ONCE)
+                .retryPolicy(RetryPolicy.once())
                 .listener(counter)
                 .build();
 

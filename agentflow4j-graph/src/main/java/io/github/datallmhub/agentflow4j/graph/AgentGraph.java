@@ -48,8 +48,7 @@ public final class AgentGraph implements Agent {
         this.entryNode = Objects.requireNonNull(b.entryNode,
                 "entryNode must be set (first addNode is used by default)");
         this.errorPolicy = b.errorPolicy;
-        this.retryPolicy = b.retryPolicy != null ? b.retryPolicy
-                : (b.errorPolicy == ErrorPolicy.RETRY_ONCE ? RetryPolicy.once() : RetryPolicy.none());
+        this.retryPolicy = b.retryPolicy != null ? b.retryPolicy : RetryPolicy.none();
         this.budgetPolicy = b.budgetPolicy;
         this.statePolicy = b.statePolicy;
         this.approvalGate = b.approvalGate;
@@ -649,7 +648,7 @@ public final class AgentGraph implements Agent {
      * Runs the configured {@link StatePolicy} against the state updates a
      * node returned. If any update is denied, the outcome is replaced with
      * a failed {@link AgentResult} carrying a {@link StatePolicyViolation},
-     * so the existing {@link ErrorPolicy} (FAIL_FAST / RETRY_ONCE /
+     * so the existing {@link ErrorPolicy} (FAIL_FAST /
      * SKIP_NODE) decides what to do next.
      */
     private NodeOutcome enforceStatePolicy(String nodeName, NodeOutcome outcome) {

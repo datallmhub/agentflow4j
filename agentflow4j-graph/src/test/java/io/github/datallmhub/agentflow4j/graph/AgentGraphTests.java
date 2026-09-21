@@ -157,7 +157,7 @@ class AgentGraphTests {
 
         AgentGraph graph = AgentGraph.builder()
                 .addNode("flaky", flaky)
-                .errorPolicy(ErrorPolicy.RETRY_ONCE)
+                .retryPolicy(RetryPolicy.once())
                 .build();
 
         AgentResult result = graph.invoke(AgentContext.empty());

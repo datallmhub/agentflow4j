@@ -42,7 +42,7 @@ AgentGraph graph = AgentGraph.builder()
                 ctx -> ctx.get(CONFIDENCE).doubleValue() < 0.7,
                 "research"))                               // loop back
         .addEdge("analyze", "write")                       // fallback: forward
-        .errorPolicy(ErrorPolicy.RETRY_ONCE)
+        .retryPolicy(RetryPolicy.once())
         .build();
 
 AgentResult result = graph.invoke(AgentContext.of("..."));
