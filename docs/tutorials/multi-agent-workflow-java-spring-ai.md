@@ -217,6 +217,7 @@ public class ReviewGraph {
 ```java
 import io.github.datallmhub.agentflow4j.core.*;
 import io.github.datallmhub.agentflow4j.graph.AgentGraph;
+import io.github.datallmhub.agentflow4j.graph.ResumeOptions;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -244,7 +245,7 @@ public class DocumentReviewService {
     }
 
     public String approve(String runId) {
-        AgentResult result = graph.resumeWithApproval(runId, "senior-reviewer");
+        AgentResult result = graph.resume(runId, ResumeOptions.ofApproval("senior-reviewer"));
         return result.context().get(ReviewKeys.FINAL_REPORT);
     }
 }

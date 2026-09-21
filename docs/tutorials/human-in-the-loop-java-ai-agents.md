@@ -157,7 +157,7 @@ public class PaymentService {
     }
 
     public PaymentResult approve(String runId, String approverName) {
-        AgentResult result = graph.resumeWithApproval(runId, approverName);
+        AgentResult result = graph.resume(runId, ResumeOptions.ofApproval(approverName));
         return PaymentResult.completed(result.context().get(CONFIRMATION_ID));
     }
 
@@ -206,7 +206,7 @@ Spring Security protects both endpoints — only users with the right role reach
 
 ## What happens on resume
 
-When `graph.resumeWithApproval(runId, approver)` is called:
+When `graph.resume(runId, ResumeOptions.ofApproval(approver))` is called:
 
 1. The checkpoint store loads the persisted graph state for this run
 2. The approval marker is added to the context for the `transfer` node
@@ -255,7 +255,7 @@ void payment_above_threshold_requires_approval() {
     assertThat(first.isInterrupted()).isTrue();
     assertThat(first.interruptReason()).contains("requires");
 
-    AgentResult resumed = graph.resumeWithApproval(first.runId(), "test-approver");
+    AgentResult resumed = graph.resume(first.runId(), ResumeOptions.ofApproval("test-approver"));
     assertThat(resumed.isInterrupted()).isFalse();
     assertThat(resumed.text()).isEqualTo("ok");
 }

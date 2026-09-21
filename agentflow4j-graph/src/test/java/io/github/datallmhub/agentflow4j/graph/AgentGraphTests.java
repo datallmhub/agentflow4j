@@ -32,7 +32,7 @@ class AgentGraphTests {
                 .addEdge("a", "b")
                 .build();
 
-        AgentResult result = graph.invoke(AgentContext.of("go"), java.time.Duration.ofMillis(50));
+        AgentResult result = graph.invoke(AgentContext.of("go"), RunOptions.ofTimeout(java.time.Duration.ofMillis(50)));
         assertThat(result.hasError()).isTrue();
         assertThat(result.error().cause()).isInstanceOf(java.util.concurrent.TimeoutException.class);
     }

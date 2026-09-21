@@ -8,7 +8,7 @@ import java.util.Objects;
  *
  * <p>UI / Slack / email integrations should display {@link #reason} and
  * {@link #nodeName} to the operator, then call
- * {@link AgentGraph#resumeWithApproval} to continue.
+ * {@link AgentGraph#resume(String, ResumeOptions)} to continue.
  */
 public record ApprovalRequest(String nodeName, String reason) {
 

@@ -24,7 +24,7 @@ class CheckpointTests {
                 .checkpointStore(store)
                 .build();
 
-        AgentResult result = graph.invoke(AgentContext.of("hi"), "run-1");
+        AgentResult result = graph.invoke(AgentContext.of("hi"), RunOptions.ofRunId("run-1"));
 
         assertThat(result.text()).isEqualTo("B");
         assertThat(store.size()).isZero();
@@ -50,13 +50,13 @@ class CheckpointTests {
                 .checkpointStore(store)
                 .build();
 
-        AgentResult first = graph.invoke(AgentContext.of("start"), "run-42");
+        AgentResult first = graph.invoke(AgentContext.of("start"), RunOptions.ofRunId("run-42"));
         assertThat(first.isInterrupted()).isTrue();
         assertThat(first.interrupt().reason()).isEqualTo("Need user confirmation");
         assertThat(store.load("run-42")).isPresent();
         assertThat(store.load("run-42").get().nextNode()).isEqualTo("ask");
 
-        AgentResult resumed = graph.resume("run-42", new UserMessage("yes please"));
+        AgentResult resumed = graph.resume("run-42", ResumeOptions.ofMessages(new UserMessage("yes please")));
         assertThat(resumed.text()).isEqualTo("done");
         assertThat(store.size()).isZero();
     }
@@ -81,7 +81,7 @@ class CheckpointTests {
                 .addNode("a", ctx -> AgentResult.ofText("A"))
                 .build();
 
-        AgentResult result = graph.invoke(AgentContext.empty(), "r");
+        AgentResult result = graph.invoke(AgentContext.empty(), RunOptions.ofRunId("r"));
         assertThat(result.completed()).isTrue();
 
         // resume still requires a store — there is nothing to load otherwise

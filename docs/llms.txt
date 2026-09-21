@@ -30,7 +30,7 @@ License: Apache 2.0. Package: `com.github.datallmhub.agentflow4j:agentflow4j-sta
 
 ## Recipes
 
-- [Durable runs](https://datallmhub.github.io/agentflow4j/recipes/durable-runs/): crash mid-workflow, resume from the last checkpoint — concrete code with `graph.invoke(ctx, runId)` and `graph.resume(runId)`
+- [Durable runs](https://datallmhub.github.io/agentflow4j/recipes/durable-runs/): crash mid-workflow, resume from the last checkpoint — concrete code with `graph.invoke(ctx, RunOptions.ofRunId(runId))` and `graph.resume(runId)`
 - [Approval via Slack](https://datallmhub.github.io/agentflow4j/recipes/approval-via-slack/): a ~30-line Spring Boot wiring of `ApprovalGate` to a Slack incoming webhook, fully async, no blocked threads
 
 ## Tutorials

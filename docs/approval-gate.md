@@ -44,20 +44,20 @@ AgentGraph graph = AgentGraph.builder()
         .build();
 
 // First call — pauses on the guarded node
-AgentResult paused = graph.invoke(ctx, "run-42");
+AgentResult paused = graph.invoke(ctx, RunOptions.ofRunId("run-42"));
 if (paused.isInterrupted()) {
     ApprovalRequest req = (ApprovalRequest) paused.interrupt().payload();
     notifySlack("Approve transfer? node=" + req.nodeName() + " reason=" + req.reason());
 }
 
 // ... later, when the human clicks Approve ...
-AgentResult resumed = graph.resumeWithApproval("run-42", "payment.transfer");
+AgentResult resumed = graph.resume("run-42", ResumeOptions.ofApproval("payment.transfer"));
 ```
 
-`resumeWithApproval(runId, approvedNode, ...messages)`:
+`resume(runId, ResumeOptions.ofApproval(node))`:
 
 - Loads the checkpoint.
-- Adds `approvedNode` to the internal `ApprovalGate.APPROVED_KEY` set on the context.
+- Adds `node` to the internal `ApprovalGate.APPROVED_KEY` set on the context. Chain `.withApproval(...)` to approve several nodes and `.withMessages(...)` to append messages.
 - Re-runs from where the gate paused. The default factories see the marker and let the node run.
 
 ## Custom rule
@@ -85,7 +85,7 @@ ApprovalGate combined = payments.and(deletes);
 
 ## Custom gates and the approval marker
 
-The built-in factories (`requireFor`, `when`) check `ApprovalGate.APPROVED_KEY` to bypass an already-approved node on resume. A fully custom gate is free to ignore the marker, but then you must arrange a different bypass signal — typically a state key the operator sets via `resumeWithApproval(..., messages)` and which the gate inspects.
+The built-in factories (`requireFor`, `when`) check `ApprovalGate.APPROVED_KEY` to bypass an already-approved node on resume. A fully custom gate is free to ignore the marker, but then you must arrange a different bypass signal: typically a state key the operator sets via `ResumeOptions.withMessages(...)` and which the gate inspects.
 
 ## Default behaviour
 

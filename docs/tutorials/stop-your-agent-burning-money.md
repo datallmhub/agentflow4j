@@ -120,7 +120,7 @@ AgentGraph graph = AgentGraph.builder()
         .checkpointStore(new InMemoryCheckpointStore())   // or JDBC / Redis
         .build();
 
-AgentResult result = graph.invoke(ctx, "ticket-4521");
+AgentResult result = graph.invoke(ctx, RunOptions.ofRunId("ticket-4521"));
 
 if (result.isInterrupted()) {
     ApprovalRequest req = (ApprovalRequest) result.interrupt().payload();
@@ -131,7 +131,7 @@ if (result.isInterrupted()) {
 When the human clicks **Approve**, resume from the exact checkpoint:
 
 ```java
-AgentResult done = graph.resumeWithApproval("ticket-4521", "payment.transfer");
+AgentResult done = graph.resume("ticket-4521", ResumeOptions.ofApproval("payment.transfer"));
 ```
 
 Reject? Just don't resume. The money never moved.

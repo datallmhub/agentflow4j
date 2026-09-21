@@ -22,7 +22,7 @@ AgentGraph graph = AgentGraph.builder()
         .runLog(log)
         .build();
 
-graph.invoke(AgentContext.of("refund my order"), "ticket-4521");
+graph.invoke(AgentContext.of("refund my order"), RunOptions.ofRunId("ticket-4521"));
 ```
 
 Then read the timeline back by run id:
@@ -59,7 +59,7 @@ Each `AgentRunEvent` is a flat record (`runId`, `sequence`, `epochMillis`, `type
 
 ## Run ids
 
-The `runId` is a general run identifier. `graph.invoke(ctx, runId)` uses it for **both** the run log and checkpointing — and now requires **neither** store:
+The `runId` is a general run identifier. `graph.invoke(ctx, RunOptions.ofRunId(runId))` uses it for **both** the run log and checkpointing — and now requires **neither** store:
 
 - with a `RunLogStore` → events are queryable via `graph.runLog(runId)`
 - with a `CheckpointStore` → the run is checkpointed/resumable
