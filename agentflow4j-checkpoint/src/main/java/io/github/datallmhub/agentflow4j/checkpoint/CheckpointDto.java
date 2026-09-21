@@ -5,7 +5,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record CheckpointDto(
+record CheckpointDto(
         int version,
         String runId,
         String nextNode,
@@ -14,5 +14,5 @@ public record CheckpointDto(
         List<MessageDto> messages,
         List<StateEntryDto> state) {
 
-    public static final int CURRENT_VERSION = 1;
+    static final int CURRENT_VERSION = 1;
 }
