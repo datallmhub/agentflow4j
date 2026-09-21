@@ -44,7 +44,7 @@ This misses most of the real problems:
 <dependency>
     <groupId>com.github.datallmhub.agentflow4j</groupId>
     <artifactId>agentflow4j-starter</artifactId>
-    <version>v0.7.0</version>
+    <version>v0.8.0</version>
 </dependency>
 ```
 
