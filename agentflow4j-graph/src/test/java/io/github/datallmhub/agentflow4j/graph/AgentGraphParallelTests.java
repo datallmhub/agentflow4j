@@ -147,6 +147,35 @@ class AgentGraphParallelTests {
     }
 
     @Test
+    void aJoinWaitsForABranchHeldBackByApproval() {
+        AtomicInteger joinCalls = new AtomicInteger();
+        InMemoryCheckpointStore store = new InMemoryCheckpointStore();
+        AgentGraph graph = AgentGraph.builder()
+                .addNode("fork", ctx -> AgentResult.ofText("fork"))
+                .addNode("free", ctx -> AgentResult.builder().stateUpdates(Map.of(LEFT, "free")).completed(true).build())
+                .addNode("paid", ctx -> AgentResult.builder().stateUpdates(Map.of(RIGHT, "paid")).completed(true).build())
+                .addNode("join", ctx -> {
+                    joinCalls.incrementAndGet();
+                    return AgentResult.ofText(ctx.get(LEFT) + "+" + ctx.get(RIGHT));
+                })
+                .addEdge("fork", "free")
+                .addEdge("fork", "paid")
+                .addEdge("free", "join")
+                .addEdge("paid", "join")
+                .approvalGate(ApprovalGate.requireFor("paid"))
+                .checkpointStore(store)
+                .build();
+
+        graph.invoke(AgentContext.of("go"), RunOptions.ofRunId("run-j"));
+        assertThat(joinCalls.get()).as("the join must not run before the gated branch").isZero();
+
+        AgentResult result = graph.resume("run-j", ResumeOptions.ofApproval("paid"));
+
+        assertThat(joinCalls.get()).isEqualTo(1);
+        assertThat(result.text()).isEqualTo("free+paid");
+    }
+
+    @Test
     void maxConcurrencyBoundsTheNumberOfBranchesInFlight() {
         AtomicInteger inFlight = new AtomicInteger();
         AtomicInteger peak = new AtomicInteger();

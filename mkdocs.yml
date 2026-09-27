@@ -103,6 +103,7 @@ nav:
       - "Checkpoint and resume agent workflows in Spring Boot": tutorials/checkpoint-resume-agent-spring-boot.md
   - Testing: testing.md
   - "Migrating to 0.8": migration-0.8.md
+  - "Migrating to 0.9": migration-0.9.md
   - Samples: samples.md
   - Cookbook ↗: https://github.com/datallmhub/agentflow4j-cookbook
 

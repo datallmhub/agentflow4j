@@ -38,6 +38,35 @@ static final StateKey<String> TECH   = StateKey.of("research.tech", String.class
 | `ErrorPolicy.FAIL_FAST` | A failing branch fails the run; the other branches of the same frontier still complete first |
 | `RunLogStore` | Every node of the frontier is recorded, so the log shows what ran in parallel |
 | Checkpoints | A checkpoint stores the whole frontier (`Checkpoint.nextNodes()`), which is why a paused fan-out resumes correctly |
+| Joins | A join waits for every incoming branch, including one held back by an approval gate, so it never sees partial results |
+
+## Rejecting an approval
+
+`resume(runId, ResumeOptions.ofRejection(node, reason))` sends the run to the node declared by `onRejection(gatedNode, target)`; without a route, the run ends with an `approval.rejected:<node>` interrupt and the checkpoint is dropped.
+
+```java
+AgentGraph.builder()
+        .addNode("plan", planner)
+        .addNode("charge", paymentGateway)      // side effect
+        .addNode("payment.transfer", transfer)
+        .addEdge("plan", "charge")
+        .addEdge("charge", "payment.transfer")
+        .approvalGate(ApprovalGate.requireFor("payment.transfer"))
+        .onRejection("payment.transfer", "plan") // rerun from the top
+        .checkpointStore(store)
+        .build();
+```
+
+A rerun that goes back through nodes that already ran does **not** repeat them: the checkpoint carries a memo of completed nodes, and a memoized node is skipped and recorded as `NODE_SKIPPED` in the run log. That is what keeps `charge` from charging twice.
+
+Each memo entry is consumed the first time it is skipped, so a loop still revisits its node on later iterations. To force a node to run again, name it:
+
+```java
+graph.resume(runId, ResumeOptions.ofRejection("payment.transfer", "wrong amount")
+        .withInvalidated("plan"));
+```
+
+A skipped node keeps the state of its first run, and `Edge.onResult` predicates cannot inspect a result that was not produced again: route reruns on state, not on the skipped node's output.
 
 ## Streaming
 

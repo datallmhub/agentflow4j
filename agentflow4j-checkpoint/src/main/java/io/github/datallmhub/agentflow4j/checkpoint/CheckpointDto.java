@@ -12,11 +12,20 @@ record CheckpointDto(
         List<String> nextNodes,
         int iterations,
         String interruptReason,
+        List<String> completedNodes,
         List<MessageDto> messages,
         List<StateEntryDto> state) {
 
-    /** v2 records the whole frontier in {@code nextNodes}; v1 only had {@code nextNode}. */
-    static final int CURRENT_VERSION = 2;
+    /**
+     * v3 adds the completed-node memo; v2 added the frontier in
+     * {@code nextNodes}; v1 only had {@code nextNode}.
+     */
+    static final int CURRENT_VERSION = 3;
+
+    /** The memo of nodes that already ran, empty on a v1 or v2 payload. */
+    java.util.Set<String> completed() {
+        return completedNodes == null ? java.util.Set.of() : java.util.Set.copyOf(completedNodes);
+    }
 
     /** The frontier to resume from, tolerating a v1 payload. */
     List<String> frontier() {

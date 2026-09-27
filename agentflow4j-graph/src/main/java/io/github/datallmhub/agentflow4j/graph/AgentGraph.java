@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.Set;
 
 import io.github.datallmhub.agentflow4j.core.Agent;
 import io.github.datallmhub.agentflow4j.core.AgentContext;
@@ -35,6 +35,8 @@ public final class AgentGraph implements Agent {
     private final ApprovalGate approvalGate;
     private final int maxIterations;
     private final int maxConcurrency;
+    private final Map<String, String> rejectionRoutes;
+    private final Map<String, Set<String>> predecessors;
     private final List<AgentListener> listeners;
     @Nullable
     private final CheckpointStore checkpointStore;
@@ -54,6 +56,14 @@ public final class AgentGraph implements Agent {
         this.approvalGate = b.approvalGate;
         this.maxIterations = b.maxIterations;
         this.maxConcurrency = b.maxConcurrency;
+        this.rejectionRoutes = Map.copyOf(b.rejectionRoutes);
+        Map<String, Set<String>> incoming = new LinkedHashMap<>();
+        for (Edge edge : this.edges) {
+            if (!edge.from().equals(edge.to())) {
+                incoming.computeIfAbsent(edge.to(), k -> new java.util.LinkedHashSet<>()).add(edge.from());
+            }
+        }
+        this.predecessors = Map.copyOf(incoming);
         this.listeners = List.copyOf(b.listeners);
         this.checkpointStore = b.checkpointStore;
         this.runLogStore = b.runLogStore;
@@ -64,6 +74,12 @@ public final class AgentGraph implements Agent {
     private void validate() {
         if (!nodes.containsKey(entryNode)) {
             throw new IllegalStateException("Entry node '" + entryNode + "' is not registered");
+        }
+        for (Map.Entry<String, String> route : rejectionRoutes.entrySet()) {
+            if (!nodes.containsKey(route.getKey()) || !nodes.containsKey(route.getValue())) {
+                throw new IllegalStateException("Rejection route between unknown nodes: "
+                        + route.getKey() + " -> " + route.getValue());
+            }
         }
         for (Edge edge : edges) {
             if (!nodes.containsKey(edge.from())) {
@@ -163,7 +179,26 @@ public final class AgentGraph implements Agent {
         if (!options.messages().isEmpty()) {
             context = context.withMessages(options.messages());
         }
-        return run(context, cp.nextNodes(), cp.iterations(), runId, null);
+        Set<String> completed = new java.util.LinkedHashSet<>(cp.completedNodes());
+        completed.removeAll(options.invalidatedNodes());
+        List<String> frontier = new ArrayList<>(cp.nextNodes());
+        for (Map.Entry<String, String> rejection : options.rejectedNodes().entrySet()) {
+            String rejected = rejection.getKey();
+            frontier.remove(rejected);
+            String target = rejectionRoutes.get(rejected);
+            log.info("graph.approval.rejected: graph={} node={} reason={} route={}",
+                    name, rejected, rejection.getValue(), target);
+            if (target != null) {
+                // The route may lead back through nodes that already ran: the memo keeps them from repeating.
+                addUnique(frontier, target);
+            }
+        }
+        if (frontier.isEmpty()) {
+            requireCheckpointStore().delete(runId);
+            String reason = "approval.rejected:" + String.join(",", options.rejectedNodes().keySet());
+            return AgentResult.interrupted(new InterruptRequest(reason, options.rejectedNodes()));
+        }
+        return run(context, frontier, cp.iterations(), runId, null, completed);
     }
 
     @Nullable
@@ -190,8 +225,19 @@ public final class AgentGraph implements Agent {
     private AgentResult run(AgentContext context, List<String> startFrontier,
                             int startIterations, @Nullable String runId,
                             @Nullable Long deadlineNanos) {
+        return run(context, startFrontier, startIterations, runId, deadlineNanos, Set.of());
+    }
+
+    private AgentResult run(AgentContext context, List<String> startFrontier,
+                            int startIterations, @Nullable String runId,
+                            @Nullable Long deadlineNanos, Set<String> alreadyCompleted) {
         log.info("graph.start: graph={}", name);
         List<String> frontier = List.copyOf(startFrontier);
+        // Nodes a previous attempt of this run completed. Each entry is consumed
+        // the first time it is skipped, so a loop can still revisit the node.
+        Set<String> memo = new java.util.LinkedHashSet<>(alreadyCompleted);
+        // What the checkpoint carries, so a later resume skips them in turn.
+        Set<String> completed = new java.util.LinkedHashSet<>(alreadyCompleted);
         AgentResult lastResult = null;
         int iterations = startIterations;
         CheckpointStore store = checkpointStore;
@@ -223,7 +269,36 @@ public final class AgentGraph implements Agent {
                 return AgentResult.failed(err);
             }
 
-            List<NodeAttempt> attempts = runWave(frontier, context, recorder);
+            // A join waits for every predecessor that is still on this frontier,
+            // for instance a branch held back by an ApprovalGate.
+            List<String> ready = new ArrayList<>();
+            List<String> deferred = new ArrayList<>();
+            for (String node : frontier) {
+                if (waitsForFrontier(node, frontier)) {
+                    deferred.add(node);
+                }
+                else {
+                    ready.add(node);
+                }
+            }
+            if (ready.isEmpty()) {
+                // Every node depends on another one of the frontier (a cycle):
+                // run them all rather than deadlock.
+                ready = new ArrayList<>(frontier);
+                deferred.clear();
+            }
+
+            List<String> toRun = new ArrayList<>();
+            for (String node : ready) {
+                if (memo.remove(node)) {
+                    log.info("graph.node.skipped: graph={} node={} reason=already completed", name, node);
+                    recorder.skipped(node);
+                }
+                else {
+                    toRun.add(node);
+                }
+            }
+            List<NodeAttempt> attempts = toRun.isEmpty() ? List.of() : runWave(toRun, context, recorder);
 
             // A node held back by an ApprovalGate never ran: it stays on the frontier.
             List<String> pending = new ArrayList<>();
@@ -262,10 +337,24 @@ public final class AgentGraph implements Agent {
             context = merged;
             for (NodeAttempt attempt : ran) {
                 lastResult = attempt.result;
+                if (!attempt.result.hasError() && !attempt.result.isInterrupted()) {
+                    completed.add(attempt.node);
+                }
             }
 
-            // Successors of the nodes that ran; a node held for approval keeps its place.
+            // Successors of the nodes that ran; nodes held for approval or waiting
+            // on a predecessor keep their place on the next frontier.
             List<String> next = new ArrayList<>(pending);
+            for (String waiting : deferred) {
+                addUnique(next, waiting);
+            }
+            for (String skipped : ready) {
+                if (!toRun.contains(skipped) && !pending.contains(skipped)) {
+                    for (String successor : nextNodes(skipped, context, lastResult)) {
+                        addUnique(next, successor);
+                    }
+                }
+            }
             for (NodeAttempt attempt : ran) {
                 if (attempt.result.isInterrupted()) {
                     String reason = attempt.result.interrupt().reason();
@@ -287,7 +376,7 @@ public final class AgentGraph implements Agent {
             if (pendingInterrupt != null) {
                 if (runId != null && store != null && !next.isEmpty()) {
                     saveCheckpoint(store, new Checkpoint(runId, next, context,
-                            iterations - 1, pendingInterrupt.interrupt()));
+                            iterations - 1, pendingInterrupt.interrupt(), completed));
                 }
                 String reason = pendingInterrupt.interrupt().reason();
                 recorder.complete("interrupted at " + next.get(0) + ": " + reason);
@@ -297,7 +386,7 @@ public final class AgentGraph implements Agent {
 
             if (runId != null && store != null) {
                 if (!next.isEmpty()) {
-                    saveCheckpoint(store, new Checkpoint(runId, next, context, iterations, null));
+                    saveCheckpoint(store, new Checkpoint(runId, next, context, iterations, null, completed));
                 }
                 else {
                     store.delete(runId);
@@ -413,6 +502,20 @@ public final class AgentGraph implements Agent {
             }
         }
         return merged;
+    }
+
+    /** True when another node of {@code frontier} leads into {@code node}. */
+    private boolean waitsForFrontier(String node, List<String> frontier) {
+        Set<String> incoming = predecessors.get(node);
+        if (incoming == null) {
+            return false;
+        }
+        for (String other : frontier) {
+            if (!other.equals(node) && incoming.contains(other)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void addUnique(List<String> target, String node) {
@@ -987,6 +1090,7 @@ public final class AgentGraph implements Agent {
         private ApprovalGate approvalGate = ApprovalGate.NONE;
         private int maxIterations = 25;
         private int maxConcurrency = 4;
+        private final Map<String, String> rejectionRoutes = new LinkedHashMap<>();
         private final List<AgentListener> listeners = new ArrayList<>();
         @Nullable
         private CheckpointStore checkpointStore;
@@ -1074,6 +1178,17 @@ public final class AgentGraph implements Agent {
                 throw new IllegalArgumentException("maxIterations must be > 0");
             }
             this.maxIterations = max;
+            return this;
+        }
+
+        /**
+         * Where the run continues when {@code gatedNode} is rejected through
+         * {@link ResumeOptions#ofRejection(String, String)}. Without a route,
+         * a rejection ends the run.
+         */
+        public Builder onRejection(String gatedNode, String targetNode) {
+            rejectionRoutes.put(Objects.requireNonNull(gatedNode, "gatedNode"),
+                    Objects.requireNonNull(targetNode, "targetNode"));
             return this;
         }
 
