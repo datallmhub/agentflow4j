@@ -83,6 +83,7 @@ nav:
   - Governance:
       - Tool policy: tool-policy.md
       - MCP tools: mcp.md
+      - OpenHands: openhands.md
       - State policy: state-policy.md
       - Approval gate: approval-gate.md
   - Resilience & runtime:

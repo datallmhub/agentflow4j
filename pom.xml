@@ -26,6 +26,7 @@
         <module>agentflow4j-graph</module>
         <module>agentflow4j-squad</module>
         <module>agentflow4j-checkpoint</module>
+        <module>agentflow4j-openhands</module>
         <module>agentflow4j-resilience4j</module>
         <module>agentflow4j-cli-agents</module>
         <module>agentflow4j-test</module>
@@ -148,6 +149,11 @@
             <dependency>
                 <groupId>io.github.datallmhub</groupId>
                 <artifactId>agentflow4j-checkpoint</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.datallmhub</groupId>
+                <artifactId>agentflow4j-openhands</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
