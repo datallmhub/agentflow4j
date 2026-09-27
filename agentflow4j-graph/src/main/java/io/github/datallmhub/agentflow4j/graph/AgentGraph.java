@@ -34,6 +34,7 @@ public final class AgentGraph implements Agent {
     private final StatePolicy statePolicy;
     private final ApprovalGate approvalGate;
     private final int maxIterations;
+    private final int maxConcurrency;
     private final List<AgentListener> listeners;
     @Nullable
     private final CheckpointStore checkpointStore;
@@ -52,6 +53,7 @@ public final class AgentGraph implements Agent {
         this.statePolicy = b.statePolicy;
         this.approvalGate = b.approvalGate;
         this.maxIterations = b.maxIterations;
+        this.maxConcurrency = b.maxConcurrency;
         this.listeners = List.copyOf(b.listeners);
         this.checkpointStore = b.checkpointStore;
         this.runLogStore = b.runLogStore;
@@ -117,7 +119,7 @@ public final class AgentGraph implements Agent {
         if (runId != null && checkpointStore != null) {
             saveCheckpoint(checkpointStore, new Checkpoint(runId, entryNode, initial, 0, null));
         }
-        return run(initial, entryNode, 0, runId, deadline(options.timeout()));
+        return run(initial, List.of(entryNode), 0, runId, deadline(options.timeout()));
     }
 
     @Override
@@ -161,7 +163,7 @@ public final class AgentGraph implements Agent {
         if (!options.messages().isEmpty()) {
             context = context.withMessages(options.messages());
         }
-        return run(context, cp.nextNode(), cp.iterations(), runId, null);
+        return run(context, cp.nextNodes(), cp.iterations(), runId, null);
     }
 
     @Nullable
@@ -177,104 +179,124 @@ public final class AgentGraph implements Agent {
         return checkpointStore;
     }
 
-    private AgentResult run(AgentContext context, String startNode,
+    /**
+     * Drives the graph one wave at a time: every node of the current frontier
+     * runs (in parallel when the frontier holds more than one node), their
+     * state updates are merged, and the successors they select form the next
+     * frontier. A node with several outgoing {@link Edge.Direct} edges fans
+     * out; a node that several branches lead to runs once, after the wave that
+     * produced it.
+     */
+    private AgentResult run(AgentContext context, List<String> startFrontier,
                             int startIterations, @Nullable String runId,
                             @Nullable Long deadlineNanos) {
         log.info("graph.start: graph={}", name);
-        String currentNode = startNode;
+        List<String> frontier = List.copyOf(startFrontier);
         AgentResult lastResult = null;
         int iterations = startIterations;
         CheckpointStore store = checkpointStore;
         RunRecorder recorder = RunRecorder.forRun(
                 runId != null ? runId : java.util.UUID.randomUUID().toString(), runLogStore);
 
-        while (currentNode != null) {
+        while (!frontier.isEmpty()) {
+            String head = frontier.get(0);
             if (Thread.currentThread().isInterrupted()) {
-                AgentError err = AgentError.of(currentNode,
+                AgentError err = AgentError.of(head,
                         new InterruptedException("Graph execution interrupted"));
-                recorder.error(currentNode, "interrupted");
-                notifyError(currentNode, err);
+                recorder.error(head, "interrupted");
+                notifyError(head, err);
                 return AgentResult.failed(err);
             }
             if (deadlineNanos != null && System.nanoTime() > deadlineNanos) {
-                AgentError err = AgentError.of(currentNode,
+                AgentError err = AgentError.of(head,
                         new java.util.concurrent.TimeoutException(
-                                "Graph exceeded timeout before entering node '" + currentNode + "'"));
-                recorder.error(currentNode, "timeout");
-                notifyError(currentNode, err);
+                                "Graph exceeded timeout before entering node '" + head + "'"));
+                recorder.error(head, "timeout");
+                notifyError(head, err);
                 return AgentResult.failed(err);
             }
             if (++iterations > maxIterations) {
-                AgentError err = AgentError.of(currentNode,
+                AgentError err = AgentError.of(head,
                         new IllegalStateException("Max iterations exceeded: " + maxIterations));
-                recorder.error(currentNode, "max iterations exceeded");
-                notifyError(currentNode, err);
+                recorder.error(head, "max iterations exceeded");
+                notifyError(head, err);
                 return AgentResult.failed(err);
             }
 
-            Node node = nodes.get(currentNode);
-            recorder.enter(currentNode);
-            notifyEnter(currentNode, context);
+            List<NodeAttempt> attempts = runWave(frontier, context, recorder);
 
-            AgentResult approvalInterrupt = gateApproval(currentNode, context);
-            if (approvalInterrupt != null) {
-                recorder.approvalRequired(currentNode, approvalInterrupt.interrupt().reason());
-                notifyApprovalRequired((ApprovalRequest) approvalInterrupt.interrupt().payload());
-                if (runId != null && store != null) {
-                    saveCheckpoint(store, new Checkpoint(runId, currentNode, context,
-                            iterations - 1, approvalInterrupt.interrupt()));
+            // A node held back by an ApprovalGate never ran: it stays on the frontier.
+            List<String> pending = new ArrayList<>();
+            AgentResult pendingInterrupt = null;
+            for (NodeAttempt attempt : attempts) {
+                if (attempt.approvalRequired) {
+                    pending.add(attempt.node);
+                    if (pendingInterrupt == null) {
+                        pendingInterrupt = attempt.result;
+                    }
                 }
-                notifyExit(currentNode, approvalInterrupt, 0L);
-                recorder.complete("approval required at " + currentNode);
-                notifyGraphComplete(approvalInterrupt);
-                return approvalInterrupt;
             }
 
-            NodeOutcome outcome = executeWithPolicy(node, context);
-            outcome = enforceStatePolicy(currentNode, outcome);
-            recorder.exit(currentNode, outcome.durationNanos);
-            notifyToolCalls(currentNode, outcome.result);
-            notifyExit(currentNode, outcome.result, outcome.durationNanos);
-
-            if (outcome.result.hasError()) {
-                AgentError err = outcome.result.error();
-                if (err != null && err.cause() instanceof StatePolicyViolation spv) {
-                    recorder.stateDenied(currentNode, spv.reason());
-                } else {
-                    recorder.error(currentNode, errorMessage(err));
+            List<NodeAttempt> ran = attempts.stream().filter(a -> !a.approvalRequired).toList();
+            for (NodeAttempt attempt : ran) {
+                if (attempt.result.hasError() && errorPolicy == ErrorPolicy.FAIL_FAST) {
+                    recorder.complete("failed at " + attempt.node);
+                    notifyGraphComplete(attempt.result);
+                    return attempt.result;
                 }
-                notifyError(currentNode, err);
-                if (errorPolicy == ErrorPolicy.FAIL_FAST) {
-                    recorder.complete("failed at " + currentNode);
-                    notifyGraphComplete(outcome.result);
-                    return outcome.result;
-                }
-                lastResult = outcome.result;
-            }
-            else {
-                context = context.applyResult(outcome.result);
-                lastResult = outcome.result;
             }
 
-            if (outcome.result.isInterrupted()) {
-                String reason = outcome.result.interrupt().reason();
-                if (reason.startsWith("budget.exceeded")) {
-                    recorder.budgetExceeded(currentNode, reason);
-                    notifyBudgetExceeded(currentNode, outcome.result.interrupt());
-                }
-                if (runId != null && store != null) {
-                    saveCheckpoint(store, new Checkpoint(runId, currentNode, context,
-                            iterations - 1, outcome.result.interrupt()));
-                }
-                recorder.complete("interrupted at " + currentNode + ": " + reason);
-                notifyGraphComplete(outcome.result);
-                return outcome.result;
+            AgentContext merged;
+            try {
+                merged = mergeWave(context, ran);
+            }
+            catch (StateConflictException conflict) {
+                AgentError err = AgentError.of(conflict.firstNode(), conflict);
+                recorder.error(conflict.firstNode(), conflict.getMessage());
+                notifyError(conflict.firstNode(), err);
+                AgentResult failed = AgentResult.failed(err);
+                recorder.complete("failed at " + conflict.firstNode());
+                notifyGraphComplete(failed);
+                return failed;
+            }
+            context = merged;
+            for (NodeAttempt attempt : ran) {
+                lastResult = attempt.result;
             }
 
-            String next = nextNode(currentNode, context, lastResult).orElse(null);
+            // Successors of the nodes that ran; a node held for approval keeps its place.
+            List<String> next = new ArrayList<>(pending);
+            for (NodeAttempt attempt : ran) {
+                if (attempt.result.isInterrupted()) {
+                    String reason = attempt.result.interrupt().reason();
+                    if (reason.startsWith("budget.exceeded")) {
+                        recorder.budgetExceeded(attempt.node, reason);
+                        notifyBudgetExceeded(attempt.node, attempt.result.interrupt());
+                    }
+                    if (pendingInterrupt == null) {
+                        pendingInterrupt = attempt.result;
+                    }
+                    addUnique(next, attempt.node);
+                    continue;
+                }
+                for (String successor : nextNodes(attempt.node, context, attempt.result)) {
+                    addUnique(next, successor);
+                }
+            }
+
+            if (pendingInterrupt != null) {
+                if (runId != null && store != null && !next.isEmpty()) {
+                    saveCheckpoint(store, new Checkpoint(runId, next, context,
+                            iterations - 1, pendingInterrupt.interrupt()));
+                }
+                String reason = pendingInterrupt.interrupt().reason();
+                recorder.complete("interrupted at " + next.get(0) + ": " + reason);
+                notifyGraphComplete(pendingInterrupt);
+                return pendingInterrupt;
+            }
 
             if (runId != null && store != null) {
-                if (next != null) {
+                if (!next.isEmpty()) {
                     saveCheckpoint(store, new Checkpoint(runId, next, context, iterations, null));
                 }
                 else {
@@ -282,11 +304,13 @@ public final class AgentGraph implements Agent {
                 }
             }
 
-            if (next != null) {
-                recorder.transition(currentNode, next);
-                notifyTransition(currentNode, next);
+            for (NodeAttempt attempt : ran) {
+                for (String successor : nextNodes(attempt.node, context, attempt.result)) {
+                    recorder.transition(attempt.node, successor);
+                    notifyTransition(attempt.node, successor);
+                }
             }
-            currentNode = next;
+            frontier = next;
         }
 
         AgentResult finalResult = lastResult != null ? lastResult : AgentResult.ofText(null);
@@ -294,6 +318,110 @@ public final class AgentGraph implements Agent {
         notifyGraphComplete(finalResult);
         return finalResult;
     }
+
+    /** Runs one wave: inline when it holds a single node, on a bounded pool otherwise. */
+    private List<NodeAttempt> runWave(List<String> frontier, AgentContext context, RunRecorder recorder) {
+        if (frontier.size() == 1) {
+            return List.of(attemptNode(frontier.get(0), context, recorder));
+        }
+        int threads = Math.min(maxConcurrency, frontier.size());
+        java.util.concurrent.ExecutorService pool = java.util.concurrent.Executors.newFixedThreadPool(threads);
+        try {
+            List<java.util.concurrent.Future<NodeAttempt>> futures = new ArrayList<>(frontier.size());
+            for (String node : frontier) {
+                futures.add(pool.submit(() -> attemptNode(node, context, recorder)));
+            }
+            List<NodeAttempt> attempts = new ArrayList<>(frontier.size());
+            for (int i = 0; i < futures.size(); i++) {
+                try {
+                    attempts.add(futures.get(i).get());
+                }
+                catch (java.util.concurrent.ExecutionException ex) {
+                    Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+                    attempts.add(new NodeAttempt(frontier.get(i),
+                            AgentResult.failed(AgentError.of(frontier.get(i), cause)), false));
+                }
+                catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    attempts.add(new NodeAttempt(frontier.get(i),
+                            AgentResult.failed(AgentError.of(frontier.get(i), ex)), false));
+                }
+            }
+            return attempts;
+        }
+        finally {
+            pool.shutdownNow();
+        }
+    }
+
+    /** Runs a single node: approval gate, retries, budget, state policy, listeners. */
+    private NodeAttempt attemptNode(String nodeName, AgentContext context, RunRecorder recorder) {
+        Node node = nodes.get(nodeName);
+        recorder.enter(nodeName);
+        notifyEnter(nodeName, context);
+
+        AgentResult approvalInterrupt = gateApproval(nodeName, context);
+        if (approvalInterrupt != null) {
+            recorder.approvalRequired(nodeName, approvalInterrupt.interrupt().reason());
+            notifyApprovalRequired((ApprovalRequest) approvalInterrupt.interrupt().payload());
+            notifyExit(nodeName, approvalInterrupt, 0L);
+            return new NodeAttempt(nodeName, approvalInterrupt, true);
+        }
+
+        NodeOutcome outcome = enforceStatePolicy(nodeName, executeWithPolicy(node, context));
+        recorder.exit(nodeName, outcome.durationNanos);
+        notifyToolCalls(nodeName, outcome.result);
+        notifyExit(nodeName, outcome.result, outcome.durationNanos);
+
+        if (outcome.result.hasError()) {
+            AgentError err = outcome.result.error();
+            if (err != null && err.cause() instanceof StatePolicyViolation spv) {
+                recorder.stateDenied(nodeName, spv.reason());
+            }
+            else {
+                recorder.error(nodeName, errorMessage(err));
+            }
+            notifyError(nodeName, err);
+        }
+        return new NodeAttempt(nodeName, outcome.result, false);
+    }
+
+    /**
+     * Applies the results of a wave to the fork context. Two branches writing
+     * different values to the same key is a {@link StateConflictException}:
+     * the run fails rather than depending on which branch finished first.
+     */
+    private AgentContext mergeWave(AgentContext forked, List<NodeAttempt> attempts) {
+        if (attempts.size() > 1) {
+            Map<io.github.datallmhub.agentflow4j.core.StateKey<?>, String> writers = new LinkedHashMap<>();
+            Map<io.github.datallmhub.agentflow4j.core.StateKey<?>, Object> values = new LinkedHashMap<>();
+            for (NodeAttempt attempt : attempts) {
+                for (Map.Entry<io.github.datallmhub.agentflow4j.core.StateKey<?>, Object> entry
+                        : attempt.result.stateUpdates().entrySet()) {
+                    String previous = writers.putIfAbsent(entry.getKey(), attempt.node);
+                    Object seen = values.putIfAbsent(entry.getKey(), entry.getValue());
+                    if (previous != null && !Objects.equals(seen, entry.getValue())) {
+                        throw new StateConflictException(entry.getKey(), previous, attempt.node);
+                    }
+                }
+            }
+        }
+        AgentContext merged = forked;
+        for (NodeAttempt attempt : attempts) {
+            if (!attempt.result.hasError()) {
+                merged = merged.applyResult(attempt.result);
+            }
+        }
+        return merged;
+    }
+
+    private static void addUnique(List<String> target, String node) {
+        if (!target.contains(node)) {
+            target.add(node);
+        }
+    }
+
+    private record NodeAttempt(String node, AgentResult result, boolean approvalRequired) {}
 
     private static String errorMessage(@Nullable AgentError error) {
         if (error == null) {
@@ -346,6 +474,9 @@ public final class AgentGraph implements Agent {
                 log.info("graph.start: graph={}", name);
                 AgentContext context = initial;
                 String currentNode = entryNode;
+                // Streaming visits branches one after another: a single ordered
+                // event stream cannot interleave concurrent nodes.
+                List<String> queued = new ArrayList<>();
                 AgentResult lastResult = null;
                 String previousNode = null;
                 int iterations = 0;
@@ -444,7 +575,13 @@ public final class AgentGraph implements Agent {
                         return;
                     }
 
-                    String next = nextNode(currentNode, context, lastResult).orElse(null);
+                    List<String> successors = nextNodes(currentNode, context, lastResult);
+                    for (String successor : successors) {
+                        if (!queued.contains(successor)) {
+                            queued.add(successor);
+                        }
+                    }
+                    String next = queued.isEmpty() ? null : queued.remove(0);
                     if (runId != null && store != null) {
                         if (next != null) {
                             saveCheckpoint(store, new Checkpoint(runId, next, context, iterations, null));
@@ -729,27 +866,26 @@ public final class AgentGraph implements Agent {
     }
 
     /**
-     * Resolves the next node to visit after {@code from}, applying edges in
-     * declaration order with the following priority:
+     * Resolves the successors of {@code from}, applying edges in declaration
+     * order with the following priority:
      *
      * <ol>
-     *   <li>{@link Edge.OnResult} — tested first; wins if its predicate matches
-     *       {@code (context, lastResult)}. Useful for routing based on node output
-     *       (e.g. "needs-review", tool calls present, etc.).</li>
-     *   <li>{@link Edge.Conditional} — tested next; wins if its predicate matches
-     *       {@code context}. Useful for routing based on accumulated state.</li>
-     *   <li>{@link Edge.Direct} — acts as a guaranteed fallback; the first direct
-     *       edge found is used if no conditional edge fired. Only one direct fallback
-     *       per source node is meaningful.</li>
+     *   <li>{@link Edge.OnResult}: tested first, and the first match wins alone.
+     *       Useful for routing on a node's output.</li>
+     *   <li>{@link Edge.Conditional}: tested next, and the first match wins
+     *       alone. Useful for routing on accumulated state.</li>
+     *   <li>{@link Edge.Direct}: the fallback when no predicate fired.
+     *       <b>Every</b> direct edge is taken, so several direct edges out of
+     *       one node are independent branches that run in parallel and join on
+     *       the nodes they lead to.</li>
      * </ol>
      *
-     * <p><b>Important</b>: if you declare both an {@code OnResult} and a
-     * {@code Direct} edge from the same node, the {@code OnResult} wins when its
-     * predicate is {@code true}; the {@code Direct} is only taken when it is
-     * {@code false}. This mirrors a classic "match / fallthrough" pattern.
+     * <p>If you declare both an {@code OnResult} and a {@code Direct} edge from
+     * the same node, the {@code OnResult} wins when its predicate is
+     * {@code true}; the direct edges are only taken when it is {@code false}.
      */
-    private Optional<String> nextNode(String from, AgentContext context, AgentResult lastResult) {
-        String directFallback = null;
+    private List<String> nextNodes(String from, AgentContext context, AgentResult lastResult) {
+        List<String> directs = new ArrayList<>();
         for (Edge edge : edges) {
             if (!edge.from().equals(from)) {
                 continue;
@@ -757,16 +893,16 @@ public final class AgentGraph implements Agent {
             if (edge instanceof Edge.OnResult onResult
                     && lastResult != null
                     && onResult.matches(context, lastResult)) {
-                return Optional.of(onResult.to());
+                return List.of(onResult.to());
             }
             if (edge instanceof Edge.Conditional cond && cond.matches(context)) {
-                return Optional.of(cond.to());
+                return List.of(cond.to());
             }
-            if (edge instanceof Edge.Direct direct && directFallback == null) {
-                directFallback = direct.to();
+            if (edge instanceof Edge.Direct direct) {
+                addUnique(directs, direct.to());
             }
         }
-        return Optional.ofNullable(directFallback);
+        return List.copyOf(directs);
     }
 
     private void saveCheckpoint(CheckpointStore store, Checkpoint checkpoint) {
@@ -850,6 +986,7 @@ public final class AgentGraph implements Agent {
         private StatePolicy statePolicy = StatePolicy.ALLOW_ALL;
         private ApprovalGate approvalGate = ApprovalGate.NONE;
         private int maxIterations = 25;
+        private int maxConcurrency = 4;
         private final List<AgentListener> listeners = new ArrayList<>();
         @Nullable
         private CheckpointStore checkpointStore;
@@ -937,6 +1074,15 @@ public final class AgentGraph implements Agent {
                 throw new IllegalArgumentException("maxIterations must be > 0");
             }
             this.maxIterations = max;
+            return this;
+        }
+
+        /** Upper bound on the nodes of one frontier running at the same time. */
+        public Builder maxConcurrency(int max) {
+            if (max <= 0) {
+                throw new IllegalArgumentException("maxConcurrency must be > 0");
+            }
+            this.maxConcurrency = max;
             return this;
         }
 

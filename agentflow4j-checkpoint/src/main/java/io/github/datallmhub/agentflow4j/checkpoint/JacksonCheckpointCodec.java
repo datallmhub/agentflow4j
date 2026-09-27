@@ -75,6 +75,7 @@ public final class JacksonCheckpointCodec implements CheckpointCodec {
                 CheckpointDto.CURRENT_VERSION,
                 cp.runId(),
                 cp.nextNode(),
+                cp.nextNodes(),
                 cp.iterations(),
                 ir == null ? null : ir.reason(),
                 messages,
@@ -82,9 +83,9 @@ public final class JacksonCheckpointCodec implements CheckpointCodec {
     }
 
     private Checkpoint fromDto(CheckpointDto dto) {
-        if (dto.version() != CheckpointDto.CURRENT_VERSION) {
+        if (dto.version() < 1 || dto.version() > CheckpointDto.CURRENT_VERSION) {
             throw new CheckpointSerializationException("Unsupported checkpoint version: " + dto.version()
-                    + " (expected " + CheckpointDto.CURRENT_VERSION + ")");
+                    + " (supported: 1.." + CheckpointDto.CURRENT_VERSION + ")");
         }
         List<Message> messages = new ArrayList<>();
         if (dto.messages() != null) {
@@ -110,7 +111,7 @@ public final class JacksonCheckpointCodec implements CheckpointCodec {
         }
         AgentContext ctx = AgentContext.empty().withMessages(messages).withState(bag);
         InterruptRequest ir = dto.interruptReason() == null ? null : InterruptRequest.of(dto.interruptReason());
-        return new Checkpoint(dto.runId(), dto.nextNode(), ctx, dto.iterations(), ir);
+        return new Checkpoint(dto.runId(), dto.frontier(), ctx, dto.iterations(), ir);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
