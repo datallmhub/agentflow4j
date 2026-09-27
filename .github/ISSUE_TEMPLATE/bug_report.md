@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a reproducible bug in AgentFlow4J
+about: Report a reproducible bug in af4j
 title: "[Bug]: "
 labels: bug
 assignees: ""
@@ -12,7 +12,7 @@ Describe the bug clearly and concisely.
 
 ## Version
 
-- AgentFlow4J version: <!-- e.g. v0.8.0 -->
+- af4j version: <!-- e.g. v0.8.0 -->
 - Java version: <!-- Java 17+ -->
 - Maven version:
 - Spring Boot version: <!-- Spring Boot 3.x -->

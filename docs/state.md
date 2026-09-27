@@ -1,6 +1,6 @@
 # Typed state
 
-Most agent frameworks store shared state as `Map<String, Object>` — fast to write, painful to debug. AgentFlow4J uses `StateKey<T>` for compile-time typed access.
+Most agent frameworks store shared state as `Map<String, Object>` — fast to write, painful to debug. af4j uses `StateKey<T>` for compile-time typed access.
 
 ## Declaring keys
 

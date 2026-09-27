@@ -1,5 +1,5 @@
 ---
-description: "Tutorial: stop your AI agent from burning $1000 overnight on a paid API or running shell.execute. End-to-end walkthrough of AgentFlow4J's four governance gates — budget, tool, state, approval — in Java/Spring."
+description: "Tutorial: stop your AI agent from burning $1000 overnight on a paid API or running shell.execute. End-to-end walkthrough of af4j's four governance gates — budget, tool, state, approval — in Java/Spring."
 ---
 
 # Stop your AI agent from burning $1000 overnight
@@ -8,7 +8,7 @@ Most Java agent frameworks treat the agent as fully trusted: it can call any too
 
 Here's a real failure mode that motivated this tutorial: a five-agent system ran for 90 days. One night, a single agent retried a paid API **23 times** against a transient error, at $0.05/call, before anyone noticed. Small money — but the retry policy was *blind to cost*. Multiply by a bigger price tag or a `shell.execute` tool and it stops being funny.
 
-This tutorial shows how to make an agent **governed by default** with [AgentFlow4J](https://github.com/datallmhub/agentflow4j): cap its spend, block dangerous tools, protect sensitive state, and require a human signature before high-stakes actions — without writing orchestration glue.
+This tutorial shows how to make an agent **governed by default** with [af4j](https://github.com/datallmhub/agentflow4j): cap its spend, block dangerous tools, protect sensitive state, and require a human signature before high-stakes actions — without writing orchestration glue.
 
 We'll build a customer-support agent that can issue refunds, then lock it down step by step.
 
