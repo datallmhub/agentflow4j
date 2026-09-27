@@ -49,7 +49,7 @@ In a Spring Boot project, add the af4j starter (via [JitPack](https://jitpack.io
     <dependency>
         <groupId>com.github.datallmhub.agentflow4j</groupId>
         <artifactId>agentflow4j-starter</artifactId>
-        <version>v0.9.0</version>
+        <version>v0.10.0</version>
     </dependency>
 
     <!-- Spring AI — Mistral -->
@@ -65,7 +65,7 @@ In a Spring Boot project, add the af4j starter (via [JitPack](https://jitpack.io
     repositories { maven { url 'https://jitpack.io' } }
 
     dependencies {
-        implementation 'com.github.datallmhub.agentflow4j:agentflow4j-starter:v0.9.0'
+        implementation 'com.github.datallmhub.agentflow4j:agentflow4j-starter:v0.10.0'
         implementation 'org.springframework.ai:spring-ai-starter-model-mistral-ai'
     }
     ```
