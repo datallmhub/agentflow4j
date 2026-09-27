@@ -36,6 +36,7 @@ public final class AgentGraph implements Agent {
     private final int maxIterations;
     private final int maxConcurrency;
     private final Map<String, String> rejectionRoutes;
+    private final Map<String, Set<String>> predecessors;
     private final List<AgentListener> listeners;
     @Nullable
     private final CheckpointStore checkpointStore;
@@ -56,6 +57,13 @@ public final class AgentGraph implements Agent {
         this.maxIterations = b.maxIterations;
         this.maxConcurrency = b.maxConcurrency;
         this.rejectionRoutes = Map.copyOf(b.rejectionRoutes);
+        Map<String, Set<String>> incoming = new LinkedHashMap<>();
+        for (Edge edge : this.edges) {
+            if (!edge.from().equals(edge.to())) {
+                incoming.computeIfAbsent(edge.to(), k -> new java.util.LinkedHashSet<>()).add(edge.from());
+            }
+        }
+        this.predecessors = Map.copyOf(incoming);
         this.listeners = List.copyOf(b.listeners);
         this.checkpointStore = b.checkpointStore;
         this.runLogStore = b.runLogStore;
@@ -261,8 +269,27 @@ public final class AgentGraph implements Agent {
                 return AgentResult.failed(err);
             }
 
-            List<String> toRun = new ArrayList<>();
+            // A join waits for every predecessor that is still on this frontier,
+            // for instance a branch held back by an ApprovalGate.
+            List<String> ready = new ArrayList<>();
+            List<String> deferred = new ArrayList<>();
             for (String node : frontier) {
+                if (waitsForFrontier(node, frontier)) {
+                    deferred.add(node);
+                }
+                else {
+                    ready.add(node);
+                }
+            }
+            if (ready.isEmpty()) {
+                // Every node depends on another one of the frontier (a cycle):
+                // run them all rather than deadlock.
+                ready = new ArrayList<>(frontier);
+                deferred.clear();
+            }
+
+            List<String> toRun = new ArrayList<>();
+            for (String node : ready) {
                 if (memo.remove(node)) {
                     log.info("graph.node.skipped: graph={} node={} reason=already completed", name, node);
                     recorder.skipped(node);
@@ -315,9 +342,13 @@ public final class AgentGraph implements Agent {
                 }
             }
 
-            // Successors of the nodes that ran; a node held for approval keeps its place.
+            // Successors of the nodes that ran; nodes held for approval or waiting
+            // on a predecessor keep their place on the next frontier.
             List<String> next = new ArrayList<>(pending);
-            for (String skipped : frontier) {
+            for (String waiting : deferred) {
+                addUnique(next, waiting);
+            }
+            for (String skipped : ready) {
                 if (!toRun.contains(skipped) && !pending.contains(skipped)) {
                     for (String successor : nextNodes(skipped, context, lastResult)) {
                         addUnique(next, successor);
@@ -471,6 +502,20 @@ public final class AgentGraph implements Agent {
             }
         }
         return merged;
+    }
+
+    /** True when another node of {@code frontier} leads into {@code node}. */
+    private boolean waitsForFrontier(String node, List<String> frontier) {
+        Set<String> incoming = predecessors.get(node);
+        if (incoming == null) {
+            return false;
+        }
+        for (String other : frontier) {
+            if (!other.equals(node) && incoming.contains(other)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void addUnique(List<String> target, String node) {

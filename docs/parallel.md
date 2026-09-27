@@ -38,6 +38,7 @@ static final StateKey<String> TECH   = StateKey.of("research.tech", String.class
 | `ErrorPolicy.FAIL_FAST` | A failing branch fails the run; the other branches of the same frontier still complete first |
 | `RunLogStore` | Every node of the frontier is recorded, so the log shows what ran in parallel |
 | Checkpoints | A checkpoint stores the whole frontier (`Checkpoint.nextNodes()`), which is why a paused fan-out resumes correctly |
+| Joins | A join waits for every incoming branch, including one held back by an approval gate, so it never sees partial results |
 
 ## Rejecting an approval
 
