@@ -1,12 +1,12 @@
 ---
-description: "Tutorial: implement human-in-the-loop approval in Java AI agents with AgentFlow4J. Pause execution, notify a human, resume from a checkpoint, end to end."
+description: "Tutorial: implement human-in-the-loop approval in Java AI agents with af4j. Pause execution, notify a human, resume from a checkpoint, end to end."
 ---
 
 # Implementing human-in-the-loop approval in Java AI agents
 
 Autonomous agents make mistakes. They misclassify inputs, call the wrong tools, or take irreversible actions (refunds, emails, database writes) based on a hallucinated context. For high-stakes workflows, the answer is not to make the agent smarter. It is to require a human to approve before the action executes.
 
-This tutorial shows how to implement **human-in-the-loop approval** in Java with [AgentFlow4J](https://github.com/datallmhub/agentflow4j): pause an agent graph before a sensitive node, notify a human, and resume execution from a checkpoint after approval, without losing the work already done.
+This tutorial shows how to implement **human-in-the-loop approval** in Java with [af4j](https://github.com/datallmhub/agentflow4j): pause an agent graph before a sensitive node, notify a human, and resume execution from a checkpoint after approval, without losing the work already done.
 
 ---
 
@@ -28,7 +28,7 @@ This breaks immediately in production:
 - The agent code is now coupled to your notification system
 - There is no audit trail of what was approved, and when
 
-AgentFlow4J solves this with `ApprovalGate`, a gate evaluated before a node executes. When approval is required, the graph pauses, persists a checkpoint, and returns an interrupted result. The server is free. The state is safe. A human approves asynchronously. The graph resumes exactly where it left off.
+af4j solves this with `ApprovalGate`, a gate evaluated before a node executes. When approval is required, the graph pauses, persists a checkpoint, and returns an interrupted result. The server is free. The state is safe. A human approves asynchronously. The graph resumes exactly where it left off.
 
 ---
 

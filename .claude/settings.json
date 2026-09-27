@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git cherry-pick *)",
+      "Bash(mvn -pl agentflow4j-samples exec:java -Dexec.mainClass=io.github.datallmhub.agentflow4j.samples.BudgetAwareRoutingDemo -q)",
+      "Bash(mvn dependency:resolve -q)",
+      "Bash(mvn dependency:resolve -e)",
+      "Bash(mvn dependency:resolve -U -q)"
+    ]
+  }
+}

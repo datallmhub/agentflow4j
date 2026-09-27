@@ -1,8 +1,8 @@
-# AgentFlow4J
+# af4j
 
-> AgentFlow4J is a Java/Spring open-source runtime for stateful, multi-agent LLM workflows. It sits on top of Spring AI and provides graph-based execution, durable runs (JDBC/Redis checkpoints, crash-resume), and four built-in governance gates — tool access, state writes, cost budget, and human approval. Java-first, Spring-native, code-first DSL, no sidecar and no YAML policy files.
+> af4j is a Java/Spring open-source runtime for stateful, multi-agent LLM workflows. It sits on top of Spring AI and provides graph-based execution, durable runs (JDBC/Redis checkpoints, crash-resume), and four built-in governance gates — tool access, state writes, cost budget, and human approval. Java-first, Spring-native, code-first DSL, no sidecar and no YAML policy files.
 
-The project's value proposition: where most agent frameworks treat agents as fully trusted, AgentFlow4J treats them as **untrusted by default** and lets you compose governance into the runtime alongside orchestration, in idiomatic Java.
+The project's value proposition: where most agent frameworks treat agents as fully trusted, af4j treats them as **untrusted by default** and lets you compose governance into the runtime alongside orchestration, in idiomatic Java.
 
 Audience: Java/Spring developers building production multi-agent systems that need observability, durable execution, and runtime governance.
 

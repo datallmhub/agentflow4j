@@ -2,7 +2,7 @@
 
 The most common question about agent runtimes: *"what happens if a step fails in the middle?"*
 
-AgentFlow4J checkpoints after **every node**. If a step fails, the process crashes, or you deliberately pause for a human, you `resume(runId)` and execution continues **from the node that didn't finish** — the steps that already succeeded do not re-run (and their LLM calls aren't paid for again).
+af4j checkpoints after **every node**. If a step fails, the process crashes, or you deliberately pause for a human, you `resume(runId)` and execution continues **from the node that didn't finish** — the steps that already succeeded do not re-run (and their LLM calls aren't paid for again).
 
 ## The store
 
