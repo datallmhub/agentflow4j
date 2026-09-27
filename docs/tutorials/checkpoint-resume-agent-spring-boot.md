@@ -55,12 +55,19 @@ For most Spring Boot applications, `JdbcCheckpointStore` is the right choice:
 
 ```java
 @Bean
-CheckpointStore checkpointStore(DataSource dataSource) {
-    return new JdbcCheckpointStore(dataSource);
+CheckpointStore checkpointStore(DataSource dataSource, PlatformTransactionManager txManager) {
+    // Register every custom state type the graph writes, so checkpoints can be serialized
+    StateTypeRegistry types = new StateTypeRegistry()
+        .register(TICKET)
+        .register(DRAFT);
+    JdbcCheckpointStore store = new JdbcCheckpointStore(
+        new JdbcTemplate(dataSource), txManager, new JacksonCheckpointCodec(types));
+    store.createTableIfMissing();   // or create `agent_checkpoint` with Flyway
+    return store;
 }
 ```
 
-The store creates its table automatically on first use (`agentflow_checkpoint`). No Flyway migration needed.
+The table is named `agent_checkpoint` by default; pass a name to the four-argument constructor to change it.
 
 ---
 
@@ -246,7 +253,7 @@ AgentGraph graph = AgentGraph.builder()
     .retryPolicy(RetryPolicy.exponential(3, Duration.ofSeconds(2))
         .withClassifier(FailureClassifier.defaults()))
     // Persist state after every node
-    .checkpointStore(new JdbcCheckpointStore(dataSource))
+    .checkpointStore(checkpointStore)
     .build();
 ```
 

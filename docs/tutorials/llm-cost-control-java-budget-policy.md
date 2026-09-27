@@ -54,12 +54,19 @@ This misses most of the real problems:
 
 `BudgetPolicy` supports three scopes, which can be combined:
 
-| Scope | What it limits | Factory method |
+| Scope | What it limits | How to set it |
 |---|---|---|
-| `PER_RUN` | Total cost of all nodes in one `graph.invoke()` call | `BudgetPolicy.perRun(limit, ...)` |
-| `PER_NODE` | Cost of a single node execution | `BudgetPolicy.perNode(limit, ...)` |
-| `PER_CALL` | Cost of a single LLM call | `BudgetPolicy.perCall(limit, ...)` |
-| Hierarchical | All three at once, nested | `BudgetPolicy.hierarchical(limits, ...)` |
+| `RUN` | Total cost of all nodes in one `graph.invoke()` call | `BudgetLimits.run(2.00)`, or `BudgetLimits.builder().perRun(2.00)` |
+| `NODE` | Cost of a single node execution | `BudgetLimits.builder().perNode(0.50)` |
+| `CALL` | Cost of a single LLM call | `BudgetLimits.builder().perCall(0.10)` |
+
+All three are set on one `BudgetLimits` and enforced by the same policy:
+
+```java
+BudgetPolicy budget = BudgetPolicy.hierarchical(
+        BudgetLimits.builder().perRun(2.00).perNode(0.50).perCall(0.10).build(),
+        estimator, meter);
+```
 
 ### Per-run limit
 

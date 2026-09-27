@@ -73,7 +73,7 @@ See [Two API levels](two-api-levels.md) for guidance on which to use.
 AgentGraph graph = AgentGraph.builder()
     .addNode("payment", paymentAgent)
     .toolPolicy(ToolPolicy.allowList("crm.lookup").and(ToolPolicy.denyList("shell.execute")))
-    .budgetPolicy(BudgetPolicy.perRun(2.00, estimator, meter))
+    .budgetPolicy(BudgetPolicy.hierarchical(BudgetLimits.run(2.00), estimator, meter))
     .approvalGate(ApprovalGate.requireFor("payment"))
     .build();
 ```
@@ -98,7 +98,7 @@ RetryPolicy.exponential(3, Duration.ofSeconds(2))
 **Checkpoint** — graph state is persisted after every node. If the process restarts, the next run resumes from the last successful node — no work is lost:
 
 ```java
-.checkpointStore(new JdbcCheckpointStore(dataSource))
+.checkpointStore(new JdbcCheckpointStore(jdbcTemplate, txManager, new JacksonCheckpointCodec(stateTypes)))
 ```
 
 **Observability** — every run produces a structured `RunLog` (node transitions, timing, tool calls) and Micrometer metrics (token count, cost, latency). Your existing Grafana dashboard sees agent executions alongside the rest of your application.

@@ -26,6 +26,7 @@ Human approvals · Checkpoints · Budget controls · Tool policies · Durable ex
 [![Java 17+](https://img.shields.io/badge/Java-17%2B-blue)](https://adoptium.net/)
 [![Spring AI](https://img.shields.io/badge/Spring%20AI-1.0-green)](https://docs.spring.io/spring-ai/reference/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/datallmhub/agentflow4j)](https://github.com/datallmhub/agentflow4j/releases/latest)
 
 ---
 
@@ -42,15 +43,16 @@ ExecutorAgent analyst = ExecutorAgent.builder()
 // Compose a governed graph
 AgentGraph graph = AgentGraph.builder()
     .addNode("analyse", analyst)
-    .budgetPolicy(BudgetPolicy.perRun(0.50, estimator, meter))
+    .budgetPolicy(BudgetPolicy.hierarchical(BudgetLimits.run(0.50), estimator, meter))
     .approvalGate(ApprovalGate.requireFor("analyse"))
-    .checkpointStore(new JdbcCheckpointStore(dataSource))
+    .checkpointStore(new JdbcCheckpointStore(jdbcTemplate, txManager, codec))
     .build();
 
-AgentResult result = graph.run(AgentContext.of("Process this refund request"));
+AgentResult result = graph.invoke(AgentContext.of("Process this refund request"),
+                                 RunOptions.ofRunId("refund-4521"));
 ```
 
-`ToolPolicy` restricts which tools the agent can call. `BudgetPolicy` caps spend at $0.50 per run. `ApprovalGate` pauses execution until a human approves. `CheckpointStore` persists graph state: the run resumes from the last completed node after a restart.
+`ToolPolicy` restricts which tools the agent can call. `BudgetPolicy` caps spend at $0.50 per run. `ApprovalGate` pauses execution until a human approves. `CheckpointStore` persists graph state: `graph.resume("refund-4521", ResumeOptions.ofApproval("analyse"))` continues the run after the approval, or after a restart.
 
 ⭐ **If this saves you time, consider [starring the repo](https://github.com/datallmhub/agentflow4j).**
 
@@ -82,9 +84,14 @@ See [all samples](docs/samples.md) to explore other demos.
 | **Durable execution** | Survive restarts, resume from last checkpoint | `JdbcCheckpointStore`, `RedisCheckpointStore` |
 | **Human-in-the-loop** | Pause before critical actions, resume on approval | `ApprovalGate` |
 | **Resilience** | Classify failures, retry smart, route to fallback | `RetryPolicy`, `FailureClassifier`, `BudgetAwareRouter` |
-| **Observability** | Metrics, run logs, streaming events | Micrometer, `RunLog`, `Flux<AgentEvent>` |
+| **Parallel branches** | Run independent branches at once, join deterministically | fan-out on direct edges, `maxConcurrency`, `StateConflictException` |
+| **MCP tools** | Govern the tools an MCP server exposes | `ExecutorAgent.toolProviders(...)` |
+| **Coding agent** | Delegate a coding task, keep the governance | `OpenHandsAgent` |
+| **Observability** | Metrics, run logs, lifecycle hooks, streaming events | Micrometer, `RunLog`, `AgentListener`, `Flux<AgentEvent>` |
 
 Two API levels: **Squad API** for dynamic routing with minimal setup, **Graph API** for explicit flows, loops and full control. See [Two API levels](docs/two-api-levels.md).
+
+Since **1.0** the public API of `agentflow4j-core`, `agentflow4j-graph`, `agentflow4j-checkpoint`, `agentflow4j-squad` and `agentflow4j-test` is stable: a breaking change waits for 2.0. Types marked `@Experimental` are the exception, including the `agentflow4j-openhands` module, which tracks the OpenHands V1 API.
 
 ---
 
@@ -101,6 +108,9 @@ See [Getting started](docs/getting-started.md) for Maven/Gradle setup and module
 - [Typed state](docs/state.md): `StateKey<T>` instead of `Map<String, Object>`
 - [Tool policy](docs/tool-policy.md): allow/deny tool calls per agent, with argument-aware rules
 - [State policy](docs/state-policy.md): allow/deny writes to specific `StateKey<T>`, with argument-aware rules
+- [Parallel branches](docs/parallel.md): fan-out, join, state merge, and an approval that pauses one branch
+- [MCP tools](docs/mcp.md): MCP tools under a `ToolPolicy`, with the audit trail
+- [OpenHands](docs/openhands.md): delegate a coding task, asynchronously and idempotently
 - [Approval gate](docs/approval-gate.md): human-in-the-loop pause/resume on sensitive nodes
   - [Recipe: approval via Slack](docs/recipes/approval-via-slack.md): async, non-blocking, ~30 lines
 - [Resilience & error handling](docs/resilience.md): retries, circuit breaker, budget policy
@@ -110,8 +120,9 @@ See [Getting started](docs/getting-started.md) for Maven/Gradle setup and module
 - [Streaming](docs/streaming.md): `Flux<AgentEvent>` tokens, transitions, tool calls
 - [Testing without an LLM](docs/testing.md): `MockAgent` + `TestGraph`
 - [Samples](docs/samples.md): runnable examples shipped with the repo
+- Migration guides: [0.7 to 0.8](docs/migration-0.8.md), [0.8 to 0.9](docs/migration-0.9.md)
 
-**Cookbook:** [af4j Cookbook](https://github.com/datallmhub/agentflow4j-cookbook): standalone, copy-paste recipes (RAG agent, support-ticket triage, web research, Slack bot, batch document processing), each a self-contained Maven module that runs locally against Ollama.
+**Cookbook:** [af4j Cookbook](https://github.com/datallmhub/agentflow4j-cookbook): eleven standalone, copy-paste recipes (RAG agent, ticket triage, web research, Slack bot, batch processing, cost-aware routing, governed MCP agent, self-correcting writer, LLM as a judge, parallel research squad, governed OpenHands workflow), each a self-contained Maven module that runs locally against Ollama.
 
 **Tutorial:** [Stop your AI agent from burning $1000 overnight](docs/tutorials/stop-your-agent-burning-money.md): governed execution end to end.
 
@@ -124,7 +135,11 @@ See [Getting started](docs/getting-started.md) for Maven/Gradle setup and module
 | **0.5** | shipped | Subgraphs, parallel fan-out, cancellation, typed output, retry/circuit-breaker/budget policies, JDBC/Redis checkpoint store, web playground |
 | **0.6** | shipped | Governed execution: `ToolPolicy`, `StatePolicy`, `ApprovalGate`: allow/deny tools, guard state writes, human-in-the-loop pause/resume |
 | **0.7** | shipped | Adaptive execution: reason-aware retry (`FailureClassifier`), cost-aware routing (`BudgetAwareRouter`) |
-| **1.0** | in progress | API stabilization pass · lifecycle hooks (`onCheckpoint`, `onToolCall`, `onFailure`) · MCP compatibility · OpenHands integration adapter · Parallel-DAG execution |
+| **0.8** | shipped | API stabilization: `RunOptions` / `ResumeOptions`, governed streaming, lifecycle hooks, MCP tool providers |
+| **0.9** | shipped | Parallel execution: fan-out and join, deterministic state merge, approval that pauses one branch, reruns that skip completed nodes |
+| **0.10** | shipped | OpenHands: delegate a coding task from a node, asynchronously and idempotently |
+| **1.0** | shipped | Stable API: core, graph, checkpoint, squad and test are frozen until 2.0 |
+| **1.x** | next | Lifecycle hook coverage, a streaming scheduler for parallel branches, more cookbook recipes |
 | **2.0** | exploring | Temporal-like interruption, compensation/saga, OpenTelemetry tracing |
 
 ---
