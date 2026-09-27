@@ -12,7 +12,7 @@ Describe the bug clearly and concisely.
 
 ## Version
 
-- af4j version: <!-- e.g. v0.10.0 -->
+- af4j version: <!-- e.g. v1.0.0 -->
 - Java version: <!-- Java 17+ -->
 - Maven version:
 - Spring Boot version: <!-- Spring Boot 3.x -->

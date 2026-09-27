@@ -31,7 +31,7 @@ af4j is distributed via [JitPack](https://jitpack.io/#datallmhub/agentflow4j). A
     <dependency>
         <groupId>com.github.datallmhub.agentflow4j</groupId>
         <artifactId>agentflow4j-starter</artifactId>
-        <version>v0.10.0</version>
+        <version>v1.0.0</version>
     </dependency>
     ```
 
@@ -41,7 +41,7 @@ af4j is distributed via [JitPack](https://jitpack.io/#datallmhub/agentflow4j). A
     repositories { maven { url 'https://jitpack.io' } }
 
     dependencies {
-        implementation 'com.github.datallmhub.agentflow4j:agentflow4j-starter:v0.10.0'
+        implementation 'com.github.datallmhub.agentflow4j:agentflow4j-starter:v1.0.0'
     }
     ```
 

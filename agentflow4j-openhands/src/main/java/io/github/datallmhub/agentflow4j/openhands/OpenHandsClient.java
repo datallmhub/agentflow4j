@@ -11,6 +11,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.github.datallmhub.agentflow4j.core.Experimental;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
  * OpenHandsClient local = OpenHandsClient.of(URI.create("http://localhost:3000"), apiKey);
  * }</pre>
  */
+@Experimental
 public final class OpenHandsClient {
 
     private static final Logger log = LoggerFactory.getLogger(OpenHandsClient.class);
