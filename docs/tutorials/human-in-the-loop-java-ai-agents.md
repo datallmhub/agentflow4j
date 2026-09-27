@@ -46,12 +46,12 @@ af4j solves this with `ApprovalGate`, a gate evaluated before a node executes. W
     <dependency>
         <groupId>com.github.datallmhub.agentflow4j</groupId>
         <artifactId>agentflow4j-starter</artifactId>
-        <version>v0.8.0</version>
+        <version>v0.9.0</version>
     </dependency>
     <dependency>
         <groupId>com.github.datallmhub.agentflow4j</groupId>
         <artifactId>agentflow4j-checkpoint</artifactId>
-        <version>v0.8.0</version>
+        <version>v0.9.0</version>
     </dependency>
     <dependency>
         <groupId>org.springframework.boot</groupId>
