@@ -90,6 +90,7 @@ nav:
       - Run log: run-log.md
       - Observability: observability.md
       - Streaming: streaming.md
+      - Parallel branches: parallel.md
   - Recipes:
       - Approval via Slack: recipes/approval-via-slack.md
       - Durable runs: recipes/durable-runs.md
