@@ -9,6 +9,7 @@ package io.github.datallmhub.agentflow4j.graph;
 public enum RunEventType {
     NODE_ENTER,
     NODE_EXIT,
+    NODE_SKIPPED,
     NODE_ERROR,
     TRANSITION,
     APPROVAL_REQUIRED,

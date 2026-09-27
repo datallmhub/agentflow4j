@@ -41,6 +41,11 @@ final class RunRecorder {
                 System.currentTimeMillis(), type, node, detail, durationNanos));
     }
 
+    /** A node the memo shows as already completed, so it did not run again. */
+    void skipped(String node) {
+        record(RunEventType.NODE_SKIPPED, node, "already completed", 0L);
+    }
+
     void enter(String node) {
         record(RunEventType.NODE_ENTER, node, null, 0L);
     }

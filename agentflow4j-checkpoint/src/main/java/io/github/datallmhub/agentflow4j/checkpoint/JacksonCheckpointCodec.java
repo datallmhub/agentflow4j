@@ -78,6 +78,7 @@ public final class JacksonCheckpointCodec implements CheckpointCodec {
                 cp.nextNodes(),
                 cp.iterations(),
                 ir == null ? null : ir.reason(),
+                List.copyOf(cp.completedNodes()),
                 messages,
                 state);
     }
@@ -111,7 +112,7 @@ public final class JacksonCheckpointCodec implements CheckpointCodec {
         }
         AgentContext ctx = AgentContext.empty().withMessages(messages).withState(bag);
         InterruptRequest ir = dto.interruptReason() == null ? null : InterruptRequest.of(dto.interruptReason());
-        return new Checkpoint(dto.runId(), dto.frontier(), ctx, dto.iterations(), ir);
+        return new Checkpoint(dto.runId(), dto.frontier(), ctx, dto.iterations(), ir, dto.completed());
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
