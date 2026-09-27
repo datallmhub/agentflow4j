@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import io.github.datallmhub.agentflow4j.core.Agent;
+import io.github.datallmhub.agentflow4j.core.Experimental;
 import io.github.datallmhub.agentflow4j.core.AgentContext;
 import io.github.datallmhub.agentflow4j.core.AgentError;
 import io.github.datallmhub.agentflow4j.core.AgentResult;
@@ -47,6 +48,7 @@ import org.slf4j.LoggerFactory;
  *         .build();
  * }</pre>
  */
+@Experimental
 public final class OpenHandsAgent implements Agent {
 
     private static final Logger log = LoggerFactory.getLogger(OpenHandsAgent.class);

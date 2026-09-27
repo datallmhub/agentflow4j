@@ -6,7 +6,7 @@
 <dependency>
     <groupId>com.github.datallmhub.agentflow4j</groupId>
     <artifactId>agentflow4j-openhands</artifactId>
-    <version>v0.10.0</version>
+    <version>v1.0.0</version>
 </dependency>
 ```
 
