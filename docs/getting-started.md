@@ -141,7 +141,7 @@ From here you can add typed state passed between nodes, conditional edges, retri
 
 ## Next steps
 
-- **[Cookbook](https://github.com/datallmhub/agentflow4j-cookbook)** — five runnable Java recipes (RAG, ticket triage, web research, Slack bot, batch processing), each a self-contained Maven module.
+- **[Cookbook](https://github.com/datallmhub/agentflow4j-cookbook)**: eleven runnable Java recipes, from a RAG agent to a governed OpenHands workflow, each a self-contained Maven module.
 - **[Two API levels](two-api-levels.md)** — when to use the high-level Squad API vs the low-level Graph API.
 - **[Typed state](state.md)** — share data between nodes with `StateKey<T>` instead of `Map<String, Object>`.
 - **[Governance](tool-policy.md)** — cap spend, restrict tools, protect state, and require human approval.

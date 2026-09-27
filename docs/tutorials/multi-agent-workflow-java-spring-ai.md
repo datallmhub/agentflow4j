@@ -204,7 +204,7 @@ public class ReviewGraph {
             .budgetPolicy(BudgetPolicy.hierarchical(
                 BudgetLimits.run(0.20), estimator, meter))
             // persist state after every node — resume after restart
-            .checkpointStore(new JdbcCheckpointStore(dataSource))
+            .checkpointStore(checkpointStore)   // see the checkpoint tutorial for the bean
             .build();
     }
 }
