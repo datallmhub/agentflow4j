@@ -35,7 +35,7 @@ When a run is resumed, af4j loads the checkpoint, identifies the next node to ex
 <dependency>
     <groupId>com.github.datallmhub.agentflow4j</groupId>
     <artifactId>agentflow4j-starter</artifactId>
-    <version>v0.9.0</version>
+    <version>v0.10.0</version>
 </dependency>
 ```
 
