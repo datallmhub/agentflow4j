@@ -54,7 +54,7 @@
         <!-- Jackson 3 comes in with the MCP SDK 1.0 (mcp-json-jackson3), which asks for 3.0.x. -->
         <jackson3-bom.version>3.1.6</jackson3-bom.version>
         <log4j2.version>2.25.5</log4j2.version>
-        <mcp.version>1.0.0</mcp.version>
+        <mcp.version>1.0.1</mcp.version>
     </properties>
 
     <dependencyManagement>
