@@ -1,5 +1,5 @@
 ---
-description: "Production error handling for Java multi-agent workflows in AgentFlow4J: retry with backoff, circuit breakers per node, budget policy capping cost per run/node/call, and human-in-the-loop checkpoints."
+description: "Production error handling for Java multi-agent workflows in af4j: retry with backoff, circuit breakers per node, budget policy capping cost per run/node/call, and human-in-the-loop checkpoints."
 ---
 
 # Resilience & Error Handling

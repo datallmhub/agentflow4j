@@ -1,12 +1,12 @@
 ---
-description: "Step-by-step tutorial: build a multi-agent workflow in Java with Spring AI and AgentFlow4J. Agents, routing, typed state, governance gates — end to end."
+description: "Step-by-step tutorial: build a multi-agent workflow in Java with Spring AI and af4j. Agents, routing, typed state, governance gates — end to end."
 ---
 
 # How to build a multi-agent workflow in Java with Spring AI
 
 Most Spring AI tutorials stop at a single `ChatClient` call. That's fine for a chatbot, but real production systems need more: multiple agents collaborating, durable state surviving restarts, routing decisions based on context, and governance to prevent runaway costs or unsafe actions.
 
-This tutorial builds a **document review workflow** from scratch — three agents, a governed graph, typed state, and a human approval gate — using [AgentFlow4J](https://github.com/datallmhub/agentflow4j) on top of Spring AI.
+This tutorial builds a **document review workflow** from scratch — three agents, a governed graph, typed state, and a human approval gate — using [af4j](https://github.com/datallmhub/agentflow4j) on top of Spring AI.
 
 ---
 

@@ -1,12 +1,12 @@
 ---
-description: "AgentFlow4J is a framework and runtime for governed, stateful multi-agent systems on the JVM. Human approvals, checkpoints, budget controls, tool policies and durable execution built for Spring."
+description: "af4j is a framework and runtime for governed, stateful multi-agent systems on the JVM. Human approvals, checkpoints, budget controls, tool policies and durable execution built for Spring."
 ---
 
-# AgentFlow4J
+# af4j
 
 **Build AI agents you can trust in production.**
 
-AgentFlow4J is a framework and runtime for governed, stateful multi-agent systems on the JVM.
+af4j is a framework and runtime for governed, stateful multi-agent systems on the JVM.
 
 Human approvals · Checkpoints · Budget controls · Tool policies · Durable execution
 
@@ -16,7 +16,7 @@ Human approvals · Checkpoints · Budget controls · Tool policies · Durable ex
 
 ---
 
-## Why AgentFlow4J?
+## Why af4j?
 
 - Build multi-agent workflows with explicit orchestration
 - Persist execution across failures and restarts
@@ -28,7 +28,7 @@ Human approvals · Checkpoints · Budget controls · Tool policies · Durable ex
 
 ## Core capabilities
 
-| Capability | What it does | AgentFlow4J |
+| Capability | What it does | af4j |
 |---|---|---|
 | **Multi-agent orchestration** | Build agent teams with routing and fan-out | `AgentGraph`, `CoordinatorAgent`, `ParallelAgent` |
 | **Governance** | Control what agents can call, change, or spend | `ToolPolicy`, `StatePolicy`, `BudgetPolicy`, `ApprovalGate` |
@@ -63,4 +63,4 @@ Runs `SupportTriageDemo`: a governed multi-agent workflow with `ToolPolicy` and 
 ---
 
 !!! note "Scope"
-    AgentFlow4J is an independent open-source project. It is **not** an official Spring project.
+    af4j is an independent open-source project. It is **not** an official Spring project.

@@ -1,14 +1,14 @@
-# AgentFlow4J
+# af4j
 
 **Build AI agents you can trust in production.**
 
-AgentFlow4J is a framework and runtime for governed, stateful multi-agent systems on the JVM.
+af4j is a framework and runtime for governed, stateful multi-agent systems on the JVM.
 
 Human approvals · Checkpoints · Budget controls · Tool policies · Durable execution
 
 ---
 
-## Why AgentFlow4J?
+## Why af4j?
 
 - Build multi-agent workflows with explicit orchestration
 - Persist execution across failures and restarts
@@ -19,7 +19,7 @@ Human approvals · Checkpoints · Budget controls · Tool policies · Durable ex
 ---
 
 <p align="center">
-<img width="1536" height="768" alt="AgentFlow4J: Build · Govern · Run" src="docs/images/hero.jpg" />
+<img width="1536" height="768" alt="af4j: Build · Govern · Run" src="docs/images/hero.jpg" />
 </p>
 
 [![build](https://github.com/datallmhub/agentflow4j/actions/workflows/build.yml/badge.svg)](https://github.com/datallmhub/agentflow4j/actions)
@@ -75,7 +75,7 @@ See [all samples](docs/samples.md) to explore other demos.
 
 ## Core capabilities
 
-| Capability | What it does | AgentFlow4J |
+| Capability | What it does | af4j |
 |---|---|---|
 | **Multi-agent orchestration** | Build agent teams with routing and fan-out | `AgentGraph`, `CoordinatorAgent`, `ParallelAgent` |
 | **Governance** | Control what agents can call, change, or spend | `ToolPolicy`, `StatePolicy`, `BudgetPolicy`, `ApprovalGate` |
@@ -111,7 +111,7 @@ See [Getting started](docs/getting-started.md) for Maven/Gradle setup and module
 - [Testing without an LLM](docs/testing.md): `MockAgent` + `TestGraph`
 - [Samples](docs/samples.md): runnable examples shipped with the repo
 
-**Cookbook:** [AgentFlow4J Cookbook](https://github.com/datallmhub/agentflow4j-cookbook): standalone, copy-paste recipes (RAG agent, support-ticket triage, web research, Slack bot, batch document processing), each a self-contained Maven module that runs locally against Ollama.
+**Cookbook:** [af4j Cookbook](https://github.com/datallmhub/agentflow4j-cookbook): standalone, copy-paste recipes (RAG agent, support-ticket triage, web research, Slack bot, batch document processing), each a self-contained Maven module that runs locally against Ollama.
 
 **Tutorial:** [Stop your AI agent from burning $1000 overnight](docs/tutorials/stop-your-agent-burning-money.md): governed execution end to end.
 

@@ -1,10 +1,10 @@
 ---
-description: "AgentFlow4J core concepts: agents, teams, rules and execution — how the four building blocks map to the Java API."
+description: "af4j core concepts: agents, teams, rules and execution — how the four building blocks map to the Java API."
 ---
 
 # Core concepts
 
-AgentFlow4J is built around four ideas. Understanding them is enough to read any recipe or tutorial in the docs.
+af4j is built around four ideas. Understanding them is enough to read any recipe or tutorial in the docs.
 
 ---
 
@@ -33,7 +33,7 @@ ExecutorAgent analyst = ExecutorAgent.builder()
 
 ## Teams
 
-A **team** is a group of agents that collaborate on a task. AgentFlow4J provides two ways to organise them.
+A **team** is a group of agents that collaborate on a task. af4j provides two ways to organise them.
 
 **Squad API** — dynamic routing, minimal setup. A `CoordinatorAgent` receives the task and decides which `ExecutorAgent` handles it:
 
@@ -86,7 +86,7 @@ See [Tool policy](tool-policy.md), [State policy](state-policy.md), [Budget poli
 
 ## Execution
 
-**Execution** is how AgentFlow4J makes runs reliable. Three mechanisms work together:
+**Execution** is how af4j makes runs reliable. Three mechanisms work together:
 
 **Retry** — failed nodes are retried with backoff. The `FailureClassifier` distinguishes transient errors from permanent failures and over-budget conditions, so retries don't burn money:
 
