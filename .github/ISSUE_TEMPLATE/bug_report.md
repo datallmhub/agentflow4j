@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a reproducible bug in af4j
+about: Report a reproducible bug in AF4J
 title: "[Bug]: "
 labels: bug
 assignees: ""
@@ -12,7 +12,7 @@ Describe the bug clearly and concisely.
 
 ## Version
 
-- af4j version: <!-- e.g. v1.0.0 -->
+- AF4J version: <!-- e.g. v1.0.0 -->
 - Java version: <!-- Java 17+ -->
 - Maven version:
 - Spring Boot version: <!-- Spring Boot 3.x -->

@@ -1,10 +1,10 @@
 ---
-description: "Run LLM agents in Java for free: create a Mistral account, grab a free API key, and wire it into an af4j agent on Spring Boot — step by step, no credit card maze, no Python."
+description: "Run LLM agents in Java for free: create a Mistral account, grab a free API key, and wire it into an AF4J agent on Spring Boot — step by step, no credit card maze, no Python."
 ---
 
 # Run your first Java AI agent for free (with Mistral)
 
-Most "build an AI agent" tutorials assume Python and a paid OpenAI key. This one is **Java/Spring** and **free**: you'll create a [Mistral](https://mistral.ai/) account, get a free API key, and run a real LLM-backed agent with [af4j](https://github.com/datallmhub/agentflow4j) — start to finish in about ten minutes.
+Most "build an AI agent" tutorials assume Python and a paid OpenAI key. This one is **Java/Spring** and **free**: you'll create a [Mistral](https://mistral.ai/) account, get a free API key, and run a real LLM-backed agent with [AF4J](https://github.com/datallmhub/agentflow4j) — start to finish in about ten minutes.
 
 Mistral offers a **free tier on `mistral-small`** — enough to build and test agents without spending anything.
 
@@ -23,7 +23,7 @@ Mistral offers a **free tier on `mistral-small`** — enough to build and test a
 3. Keep it somewhere safe — you only see it once.
 
 !!! warning "Treat the key like a password"
-    Never paste it into a commit, screenshot, or chat tool. af4j reads it from an **environment variable**, never from a file in your repo. If a key leaks, rotate it in the console immediately.
+    Never paste it into a commit, screenshot, or chat tool. AF4J reads it from an **environment variable**, never from a file in your repo. If a key leaks, rotate it in the console immediately.
 
 Export it in your shell:
 
@@ -31,9 +31,9 @@ Export it in your shell:
 export MISTRAL_API_KEY="sk-...your-key..."
 ```
 
-## Step 3 — Add af4j + the Mistral starter
+## Step 3 — Add AF4J + the Mistral starter
 
-In a Spring Boot project, add the af4j starter (via [JitPack](https://jitpack.io/#datallmhub/agentflow4j)) and Spring AI's Mistral starter:
+In a Spring Boot project, add the AF4J starter (via [JitPack](https://jitpack.io/#datallmhub/agentflow4j)) and Spring AI's Mistral starter:
 
 === "Maven"
 
@@ -45,7 +45,7 @@ In a Spring Boot project, add the af4j starter (via [JitPack](https://jitpack.io
         </repository>
     </repositories>
 
-    <!-- af4j -->
+    <!-- AF4J -->
     <dependency>
         <groupId>com.github.datallmhub.agentflow4j</groupId>
         <artifactId>agentflow4j-starter</artifactId>
@@ -85,7 +85,7 @@ spring:
           temperature: 0.3
 ```
 
-Spring AI now auto-configures a `ChatClient` backed by Mistral. af4j uses that `ChatClient` as the brain of any agent.
+Spring AI now auto-configures a `ChatClient` backed by Mistral. AF4J uses that `ChatClient` as the brain of any agent.
 
 ## Step 5 — Write and run an agent
 
@@ -128,4 +128,4 @@ You now have a working LLM agent in Java. To turn it into a real multi-agent wor
 ---
 
 !!! tip "Staying on the free tier"
-    `mistral-small-latest` is covered by Mistral's free tier and is plenty for building and testing agents. When you move to heavier models or production traffic, af4j's [budget policy](../resilience.md#6-budget-policy-cost-gate) caps what an agent can spend — so a runaway loop can't surprise you on the invoice.
+    `mistral-small-latest` is covered by Mistral's free tier and is plenty for building and testing agents. When you move to heavier models or production traffic, AF4J's [budget policy](../resilience.md#6-budget-policy-cost-gate) caps what an agent can spend — so a runaway loop can't surprise you on the invoice.

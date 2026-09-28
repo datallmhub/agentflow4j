@@ -1,24 +1,24 @@
 ---
-description: "Tutorial: checkpoint and resume AI agent workflows in Spring Boot with af4j. Survive restarts, recover from failures, and resume paused runs — without re-running completed nodes."
+description: "Tutorial: checkpoint and resume AI agent workflows in Spring Boot with AF4J. Survive restarts, recover from failures, and resume paused runs — without re-running completed nodes."
 ---
 
 # Checkpoint and resume AI agent workflows in Spring Boot
 
 A multi-step agent workflow that takes minutes to run is fragile by default. A server restart, an out-of-memory error, or a deployment mid-run wipes everything — the next invocation starts from scratch, re-running every node, re-spending every token, re-calling every tool.
 
-This tutorial shows how to add **durable execution** to your agent workflows with [af4j](https://github.com/datallmhub/agentflow4j)'s checkpoint system: persist graph state after every node, survive any failure, and resume exactly where execution left off.
+This tutorial shows how to add **durable execution** to your agent workflows with [AF4J](https://github.com/datallmhub/agentflow4j)'s checkpoint system: persist graph state after every node, survive any failure, and resume exactly where execution left off.
 
 ---
 
 ## How checkpointing works
 
-After each node completes successfully, af4j serialises the full `AgentContext` — all typed state keys and their values — to a `CheckpointStore`. The checkpoint includes:
+After each node completes successfully, AF4J serialises the full `AgentContext` — all typed state keys and their values — to a `CheckpointStore`. The checkpoint includes:
 
 - The run ID (stable across restarts)
 - The name of the last completed node
 - The full context at that point
 
-When a run is resumed, af4j loads the checkpoint, identifies the next node to execute, and continues from there. Completed nodes are skipped entirely — no repeated LLM calls, no duplicate tool invocations, no double-spending.
+When a run is resumed, AF4J loads the checkpoint, identifies the next node to execute, and continues from there. Completed nodes are skipped entirely — no repeated LLM calls, no duplicate tool invocations, no double-spending.
 
 ---
 
@@ -43,7 +43,7 @@ When a run is resumed, af4j loads the checkpoint, identifies the next node to ex
 
 ## Step 1 — Choose a checkpoint store
 
-af4j ships three implementations:
+AF4J ships three implementations:
 
 | Store | When to use |
 |---|---|
@@ -171,7 +171,7 @@ The checkpoint stores the full typed context. Every value written by a completed
 // All context written by researcher is available to drafter
 ```
 
-Nodes that were in progress when the crash happened re-run from the beginning of that node — af4j checkpoints at node boundaries, not within a node. This is safe: a node's output mapper only runs after the LLM call succeeds, so a partial node write never reaches the checkpoint.
+Nodes that were in progress when the crash happened re-run from the beginning of that node — AF4J checkpoints at node boundaries, not within a node. This is safe: a node's output mapper only runs after the LLM call succeeds, so a partial node write never reaches the checkpoint.
 
 ---
 
@@ -235,7 +235,7 @@ void graph_resumes_after_first_node_completes() {
 
 ## Complete picture
 
-Checkpointing composes with the other af4j governance primitives:
+Checkpointing composes with the other AF4J governance primitives:
 
 ```java
 AgentGraph graph = AgentGraph.builder()
