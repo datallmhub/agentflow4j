@@ -1,16 +1,16 @@
 ---
-description: "Swap LLM provider in af4j with two lines of config: Mistral, OpenAI (GPT), Anthropic Claude, Google Vertex Gemini or a local Ollama. Spring AI handles the auto-configuration; agent code stays unchanged."
+description: "Swap LLM provider in AF4J with two lines of config: Mistral, OpenAI (GPT), Anthropic Claude, Google Vertex Gemini or a local Ollama. Spring AI handles the auto-configuration; agent code stays unchanged."
 ---
 
 # LLM providers — swap freely
 
-af4j builds on top of Spring AI. Anything Spring AI auto-configures as a `ChatModel` works as the brain of an `ExecutorAgent` — Mistral, OpenAI, Anthropic Claude, Google Gemini, a local Ollama, your own. Switching is just **two changes**: the starter dependency, and the API key property.
+AF4J builds on top of Spring AI. Anything Spring AI auto-configures as a `ChatModel` works as the brain of an `ExecutorAgent` — Mistral, OpenAI, Anthropic Claude, Google Gemini, a local Ollama, your own. Switching is just **two changes**: the starter dependency, and the API key property.
 
 The playground's `llm` bean is provider-agnostic. It receives whatever `ChatModel` Spring AI built; you decide which one.
 
 ## Getting an API key
 
-Every paid provider follows the same flow: sign in to their console, create a key, export it as an environment variable. af4j **never reads the key from a file** — it stays in your shell, out of the repo.
+Every paid provider follows the same flow: sign in to their console, create a key, export it as an environment variable. AF4J **never reads the key from a file** — it stays in your shell, out of the repo.
 
 | Provider | Console URL | Environment variable |
 |---|---|---|
@@ -148,7 +148,7 @@ Run `ollama serve` locally and `ollama pull llama3.1` first. No key, no rate lim
 
 ## Nothing else changes
 
-Once the `ChatModel` bean is in the context, every part of af4j keeps working unchanged:
+Once the `ChatModel` bean is in the context, every part of AF4J keeps working unchanged:
 
 - `ExecutorAgent.builder().chatClient(ChatClient.builder(chatModel).build())` — same code, any provider
 - `CoordinatorAgent` routing via `RoutingStrategy.llmDriven(chatClient)` — same code
@@ -159,4 +159,4 @@ This is the point of building on Spring AI: the provider is a swap, not a rewrit
 
 ## Multi-provider in one app
 
-You can mix providers in the same graph — e.g., a cheap model for triage, a strong model for synthesis. Inject two distinct `ChatModel` beans (use Spring's `@Qualifier`) and pass each to the relevant `ExecutorAgent`. Spring AI's docs cover the multi-bean setup; from af4j's perspective each agent simply takes a `ChatClient`.
+You can mix providers in the same graph — e.g., a cheap model for triage, a strong model for synthesis. Inject two distinct `ChatModel` beans (use Spring's `@Qualifier`) and pass each to the relevant `ExecutorAgent`. Spring AI's docs cover the multi-bean setup; from AF4J's perspective each agent simply takes a `ChatClient`.

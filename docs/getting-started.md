@@ -1,5 +1,5 @@
 ---
-description: "Get started with af4j: add the dependency to your Spring app, write your first agent, then compose a multi-agent graph. Java 17+, Spring Boot 3.x, Spring AI."
+description: "Get started with AF4J: add the dependency to your Spring app, write your first agent, then compose a multi-agent graph. Java 17+, Spring Boot 3.x, Spring AI."
 ---
 
 # Getting started
@@ -12,11 +12,11 @@ This page takes you from an empty Spring project to a running multi-agent graph.
 
 - **Java 17+**
 - **Spring Boot 3.x** (the project is built and tested on 3.5.x)
-- **Spring AI 1.0+** — af4j builds on Spring AI's `ChatClient` and provider starters
+- **Spring AI 1.0+** — AF4J builds on Spring AI's `ChatClient` and provider starters
 
 ## 1. Add the dependency
 
-af4j is distributed via [JitPack](https://jitpack.io/#datallmhub/agentflow4j). Add the repository and the starter.
+AF4J is distributed via [JitPack](https://jitpack.io/#datallmhub/agentflow4j). Add the repository and the starter.
 
 === "Maven"
 

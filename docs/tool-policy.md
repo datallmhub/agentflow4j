@@ -1,5 +1,5 @@
 ---
-description: "Restrict which tools an AI agent may call in Java/Spring with af4j. Allow-lists, deny-lists and argument-aware rules — block shell.execute before the call leaves the agent's process."
+description: "Restrict which tools an AI agent may call in Java/Spring with AF4J. Allow-lists, deny-lists and argument-aware rules — block shell.execute before the call leaves the agent's process."
 ---
 
 # Tool Policy

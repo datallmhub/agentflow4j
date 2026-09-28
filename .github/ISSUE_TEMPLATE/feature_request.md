@@ -10,7 +10,7 @@ assignees: ""
 
 Why is this feature needed?
 
-What problem does it solve for users of af4j?
+What problem does it solve for users of AF4J?
 
 ## Proposal
 

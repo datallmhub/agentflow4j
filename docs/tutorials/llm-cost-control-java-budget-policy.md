@@ -1,12 +1,12 @@
 ---
-description: "Tutorial: LLM cost control for Java agents with af4j BudgetPolicy. Set per-run, per-node, and per-call limits — stop runaway spend before it hits your bill."
+description: "Tutorial: LLM cost control for Java agents with AF4J BudgetPolicy. Set per-run, per-node, and per-call limits — stop runaway spend before it hits your bill."
 ---
 
 # LLM cost control for Java agents — BudgetPolicy in practice
 
 An LLM agent that loops, retries, or fans out to multiple nodes can burn through your API budget in minutes. A ReAct agent that gets stuck in a reasoning loop, a graph that retries on every transient error without a cost ceiling, or a batch job that processes 10× more documents than expected — all of these become expensive surprises on your billing dashboard.
 
-This tutorial shows how to use `BudgetPolicy` in [af4j](https://github.com/datallmhub/agentflow4j) to put hard limits on what every agent run can spend — per run, per node, or per individual LLM call.
+This tutorial shows how to use `BudgetPolicy` in [AF4J](https://github.com/datallmhub/agentflow4j) to put hard limits on what every agent run can spend — per run, per node, or per individual LLM call.
 
 ---
 
@@ -141,7 +141,7 @@ CostEstimator mistralCostEstimator() {
 
 ## Handling a budget exception
 
-When a limit is exceeded, af4j throws `BudgetExceededException`. Handle it in your service layer:
+When a limit is exceeded, AF4J throws `BudgetExceededException`. Handle it in your service layer:
 
 ```java
 @Service

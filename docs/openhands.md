@@ -1,6 +1,6 @@
 # OpenHands
 
-`OpenHandsAgent` delegates a coding task to [OpenHands](https://docs.openhands.dev) from a graph node. af4j does not reimplement the agent: it governs it, so the coding run gets an approval gate, a budget, a checkpoint and an audit trail like any other node.
+`OpenHandsAgent` delegates a coding task to [OpenHands](https://docs.openhands.dev) from a graph node. AF4J does not reimplement the agent: it governs it, so the coding run gets an approval gate, a budget, a checkpoint and an audit trail like any other node.
 
 ```xml
 <dependency>

@@ -1,5 +1,5 @@
 ---
-description: "Structured, replayable execution timeline per run for af4j — node enter/exit timings, transitions, retries, and governance events (BUDGET_EXCEEDED, STATE_DENIED, APPROVAL_REQUIRED)."
+description: "Structured, replayable execution timeline per run for AF4J — node enter/exit timings, transitions, retries, and governance events (BUDGET_EXCEEDED, STATE_DENIED, APPROVAL_REQUIRED)."
 ---
 
 # Run log — structured execution timeline

@@ -1,6 +1,6 @@
 # MCP tools
 
-af4j does not implement MCP. It governs the tools that Spring AI's MCP client already exposes: hand them to an `ExecutorAgent` and they go through the same `ToolPolicy`, tool-call audit and lifecycle hooks as any other tool.
+AF4J does not implement MCP. It governs the tools that Spring AI's MCP client already exposes: hand them to an `ExecutorAgent` and they go through the same `ToolPolicy`, tool-call audit and lifecycle hooks as any other tool.
 
 ## Wiring
 
@@ -27,7 +27,7 @@ Spring AI prefixes each MCP tool with the client name: tool `refund_order` serve
 ## Do not register MCP tools on the ChatClient
 
 !!! warning
-    Tools registered on the `ChatClient` itself, for example with `ChatClient.builder(model).defaultToolCallbacks(mcpTools)`, are invisible to af4j: they bypass the `ToolPolicy`, are not recorded as `ToolCallRecord`s and do not reach `onToolCall`. Register them on the `ExecutorAgent` with `toolProviders(...)` instead.
+    Tools registered on the `ChatClient` itself, for example with `ChatClient.builder(model).defaultToolCallbacks(mcpTools)`, are invisible to AF4J: they bypass the `ToolPolicy`, are not recorded as `ToolCallRecord`s and do not reach `onToolCall`. Register them on the `ExecutorAgent` with `toolProviders(...)` instead.
 
 ## What you get
 

@@ -1,5 +1,5 @@
 ---
-description: "Guard writes to specific StateKey<T> across an af4j multi-agent workflow. Prevent an LLM from flipping sensitive flags like payment.confirmed on its own — denials surface through the graph's error policy."
+description: "Guard writes to specific StateKey<T> across an AF4J multi-agent workflow. Prevent an LLM from flipping sensitive flags like payment.confirmed on its own — denials surface through the graph's error policy."
 ---
 
 # State Policy
