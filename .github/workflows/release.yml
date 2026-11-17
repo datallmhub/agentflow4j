@@ -20,10 +20,23 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: maven
+          server-id: central
+          server-username: CENTRAL_USERNAME
+          server-password: CENTRAL_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
       # Gate the release on a green build of the exact tagged commit.
       - name: Build and test
         run: mvn -B verify
+
+      # Uploads and validates the deployment; it is then published by hand from central.sonatype.com.
+      - name: Upload to Maven Central
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: mvn -B -Prelease -DskipTests deploy
 
       - name: Create GitHub Release
         env:
