@@ -16,32 +16,23 @@ This page takes you from an empty Spring project to a running multi-agent graph.
 
 ## 1. Add the dependency
 
-AF4J is distributed via [JitPack](https://jitpack.io/#datallmhub/agentflow4j). Add the repository and the starter.
+AF4J is published on [Maven Central](https://central.sonatype.com/artifact/io.github.datallmhub/agentflow4j-starter). Add the starter.
 
 === "Maven"
 
     ```xml
-    <repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
-
     <dependency>
-        <groupId>com.github.datallmhub.agentflow4j</groupId>
+        <groupId>io.github.datallmhub</groupId>
         <artifactId>agentflow4j-starter</artifactId>
-        <version>v1.0.0</version>
+        <version>1.0.0</version>
     </dependency>
     ```
 
 === "Gradle"
 
     ```groovy
-    repositories { maven { url 'https://jitpack.io' } }
-
     dependencies {
-        implementation 'com.github.datallmhub.agentflow4j:agentflow4j-starter:v1.0.0'
+        implementation 'io.github.datallmhub:agentflow4j-starter:1.0.0'
     }
     ```
 

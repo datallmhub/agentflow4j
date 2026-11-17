@@ -6,7 +6,7 @@ The project's value proposition: where most agent frameworks treat agents as ful
 
 Audience: Java/Spring developers building production multi-agent systems that need observability, durable execution, and runtime governance.
 
-License: Apache 2.0. Package: `com.github.datallmhub.agentflow4j:agentflow4j-starter` via JitPack. Compatible with Spring Boot 3.x, Spring AI 1.0+, Java 17+.
+License: Apache 2.0. Package: `io.github.datallmhub:agentflow4j-starter` on Maven Central. Compatible with Spring Boot 3.x, Spring AI 1.0+, Java 17+.
 
 ## Documentation
 
@@ -45,5 +45,5 @@ License: Apache 2.0. Package: `com.github.datallmhub.agentflow4j:agentflow4j-sta
 ## Source & install
 
 - Repository: [github.com/datallmhub/agentflow4j](https://github.com/datallmhub/agentflow4j)
-- Maven (JitPack): `com.github.datallmhub.agentflow4j:agentflow4j-starter:v1.0.0`
+- Maven Central: `io.github.datallmhub:agentflow4j-starter:1.0.0`
 - Modules: `agentflow4j-core`, `agentflow4j-graph`, `agentflow4j-squad`, `agentflow4j-checkpoint`, `agentflow4j-resilience4j`, `agentflow4j-starter`, `agentflow4j-playground`, `agentflow4j-cli-agents`, `agentflow4j-test`, `agentflow4j-samples`

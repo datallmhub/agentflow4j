@@ -35,17 +35,10 @@ User submits document
 **Requirements:** Java 17+, Spring Boot 3.x, Spring AI 1.0+.
 
 ```xml
-<repositories>
-    <repository>
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
-    </repository>
-</repositories>
-
 <dependency>
-    <groupId>com.github.datallmhub.agentflow4j</groupId>
+    <groupId>io.github.datallmhub</groupId>
     <artifactId>agentflow4j-starter</artifactId>
-    <version>v1.0.0</version>
+    <version>1.0.0</version>
 </dependency>
 
 <!-- Spring AI provider — swap for OpenAI, Anthropic, Gemini, Ollama -->

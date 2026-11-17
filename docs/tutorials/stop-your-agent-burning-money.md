@@ -15,15 +15,10 @@ We'll build a customer-support agent that can issue refunds, then lock it down s
 ## Setup
 
 ```xml
-<repository>
-    <id>jitpack.io</id>
-    <url>https://jitpack.io</url>
-</repository>
-
 <dependency>
-    <groupId>com.github.datallmhub.agentflow4j</groupId>
+    <groupId>io.github.datallmhub</groupId>
     <artifactId>agentflow4j-starter</artifactId>
-    <version>v1.0.0</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
