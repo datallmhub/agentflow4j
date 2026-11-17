@@ -45,7 +45,7 @@ public record FailureClassification(
         return new FailureClassification(FailureCategory.PERMANENT, null, reason);
     }
 
-    /** Budget exhaustion — the graph emits an {@link InterruptRequest} for this. */
+    /** Budget exhaustion — the graph emits an {@link io.github.datallmhub.agentflow4j.core.InterruptRequest InterruptRequest} for this. */
     public static FailureClassification overBudget(String reason) {
         return new FailureClassification(FailureCategory.OVER_BUDGET, null, reason);
     }

@@ -5,7 +5,7 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 /**
- * One entry in a {@link RunLog} — a timestamped, ordered record of something
+ * One entry in a {@link RunLogStore} — a timestamped, ordered record of something
  * that happened during a graph run. Designed to be trivially serializable
  * (all fields are primitives or strings) so it can be written to JSON, a
  * log pipeline, or rendered in a timeline UI.

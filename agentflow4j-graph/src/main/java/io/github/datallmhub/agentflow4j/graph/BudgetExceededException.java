@@ -8,7 +8,7 @@ package io.github.datallmhub.agentflow4j.graph;
  *
  * <p>The {@link FailureClassifier#defaults() default classifier} maps this
  * exception to {@link FailureCategory#OVER_BUDGET}, which causes the graph
- * to emit an {@link InterruptRequest} (reason {@code budget.exceeded:<node>})
+ * to emit an {@link io.github.datallmhub.agentflow4j.core.InterruptRequest InterruptRequest} (reason {@code budget.exceeded:<node>})
  * rather than retrying — retrying a budget condition just burns more money.
  *
  * <p>Use it for failures detected <em>during</em> execution. Failures detected

@@ -12,7 +12,7 @@ package io.github.datallmhub.agentflow4j.graph;
  *   <li>{@link #PERMANENT} — do not retry; the next attempt would fail the
  *       same way and just burn tokens.</li>
  *   <li>{@link #OVER_BUDGET} — the failure indicates a budget exhaustion;
- *       the graph emits an {@link InterruptRequest} so the caller can pause,
+ *       the graph emits an {@link io.github.datallmhub.agentflow4j.core.InterruptRequest InterruptRequest} so the caller can pause,
  *       alert, raise the limit, and resume rather than crashing.</li>
  * </ul>
  *
