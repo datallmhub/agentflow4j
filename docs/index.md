@@ -39,6 +39,22 @@ Human approvals · Checkpoints · Budget controls · Tool policies · Durable ex
 
 ---
 
+## Install
+
+AF4J is on [Maven Central](https://central.sonatype.com/artifact/io.github.datallmhub/agentflow4j-starter):
+
+```xml
+<dependency>
+    <groupId>io.github.datallmhub</groupId>
+    <artifactId>agentflow4j-starter</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+See [Getting started](getting-started.md) for Gradle and the first agent.
+
+---
+
 ## Try the demo in 5 minutes
 
 ```bash
@@ -56,7 +72,7 @@ Runs `SupportTriageDemo`: a governed multi-agent workflow with `ToolPolicy` and 
 
 - **New here?** Start with [Core concepts](concepts.md).
 - **Ready to code?** Follow the [Getting started](getting-started.md) guide.
-- **Want runnable examples?** The [Cookbook](https://github.com/datallmhub/agentflow4j-cookbook) has six self-contained Java recipes.
+- **Want runnable examples?** The [Cookbook](https://github.com/datallmhub/agentflow4j-cookbook) has eleven self-contained Java recipes.
 - **Building for production?** [Durable runs](recipes/durable-runs.md) shows how to survive a mid-workflow crash.
 - **Worried about cost?** [Stop your agent burning $1000 overnight](tutorials/stop-your-agent-burning-money.md) walks through every governance gate.
 

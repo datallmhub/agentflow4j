@@ -27,6 +27,7 @@ Human approvals · Checkpoints · Budget controls · Tool policies · Durable ex
 [![Spring AI](https://img.shields.io/badge/Spring%20AI-1.0-green)](https://docs.spring.io/spring-ai/reference/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/datallmhub/agentflow4j)](https://github.com/datallmhub/agentflow4j/releases/latest)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.datallmhub/agentflow4j-starter)](https://central.sonatype.com/artifact/io.github.datallmhub/agentflow4j-starter)
 
 ---
 
