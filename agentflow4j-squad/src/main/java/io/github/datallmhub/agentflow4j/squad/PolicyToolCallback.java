@@ -3,7 +3,6 @@ package io.github.datallmhub.agentflow4j.squad;
 import java.util.Map;
 import java.util.Objects;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.datallmhub.agentflow4j.graph.ToolPolicy;
 import io.github.datallmhub.agentflow4j.graph.ToolPolicyViolation;
 import org.jspecify.annotations.Nullable;
@@ -26,8 +25,6 @@ import org.springframework.ai.util.json.JsonParser;
  * audit trail as failed tool calls.
  */
 final class PolicyToolCallback implements ToolCallback {
-
-    private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {};
 
     private final ToolCallback delegate;
     private final ToolPolicy policy;
@@ -76,7 +73,8 @@ final class PolicyToolCallback implements ToolCallback {
             return Map.of();
         }
         try {
-            Map<String, Object> parsed = JsonParser.getObjectMapper().readValue(input, MAP_TYPE);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> parsed = JsonParser.fromJson(input, Map.class);
             return parsed == null ? Map.of() : parsed;
         } catch (Exception ex) {
             return Map.of("_raw", input);
