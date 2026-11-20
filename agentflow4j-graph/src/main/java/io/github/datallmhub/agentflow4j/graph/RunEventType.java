@@ -1,7 +1,7 @@
 package io.github.datallmhub.agentflow4j.graph;
 
 /**
- * Kinds of events captured in a {@link RunLog}. The lifecycle events mirror
+ * Kinds of events captured in a {@link RunLogStore}. The lifecycle events mirror
  * the {@link AgentListener} callbacks; the governance events make the gates
  * ({@link BudgetPolicy}, {@link StatePolicy}, {@link ApprovalGate}) visible
  * in the timeline — which is the whole point of an execution log.
