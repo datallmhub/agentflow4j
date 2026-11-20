@@ -18,11 +18,16 @@ ExecutorAgent support(ChatClient.Builder chat, ToolCallbackProvider mcpTools) {
 }
 ```
 
-The provider is queried on every run, so tools an MCP server adds or removes while the application is running are picked up without a restart.
+The provider is queried on every run, so tools an MCP server adds or removes while the application is running are picked up without a restart. With Spring AI 1.0 the provider relists the server's tools each time. From Spring AI 1.1 it caches the list until it is notified of a change, so the new list shows up once that notification has arrived.
 
 ## Tool names
 
-Spring AI prefixes each MCP tool with the client name: tool `refund_order` served through the client `orders` becomes `orders_refund_order`. `ToolPolicy` rules, `ToolCallRecord.name()` and `onToolCall` all use the prefixed name. `McpToolUtils.prefixedToolName(client, tool)` computes it.
+The name of an MCP tool is the one Spring AI exposes, and `ToolPolicy` rules, `ToolCallRecord.name()` and `onToolCall` all use that name.
+
+The naming rule depends on the Spring AI line. Spring AI 1.0 prefixes each tool with the client name: tool `refund_order` served through the client `orders` becomes `orders_refund_order`, which `McpToolUtils.prefixedToolName(client, tool)` computes. From Spring AI 1.1 the default exposes the tool under its own name, `refund_order`.
+
+!!! warning
+    A `ToolPolicy` rule written for a name the provider does not expose never matches. After changing the Spring AI version, check the names with `mcpTools.getToolCallbacks()` before relying on an allow or deny list.
 
 ## Do not register MCP tools on the ChatClient
 
