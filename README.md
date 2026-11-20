@@ -97,7 +97,15 @@ Since **1.0** the public API of `agentflow4j-core`, `agentflow4j-graph`, `agentf
 
 ## 🛠 Installation
 
-See [Getting started](docs/getting-started.md) for Maven/Gradle setup and module reference.
+```xml
+<dependency>
+    <groupId>io.github.datallmhub</groupId>
+    <artifactId>agentflow4j-starter</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+Available on Maven Central. See [Getting started](docs/getting-started.md) for Gradle setup and module reference.
 
 ---
 

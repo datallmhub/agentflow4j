@@ -33,23 +33,16 @@ export MISTRAL_API_KEY="sk-...your-key..."
 
 ## Step 3 — Add AF4J + the Mistral starter
 
-In a Spring Boot project, add the AF4J starter (via [JitPack](https://jitpack.io/#datallmhub/agentflow4j)) and Spring AI's Mistral starter:
+In a Spring Boot project, add the AF4J starter (from [Maven Central](https://central.sonatype.com/artifact/io.github.datallmhub/agentflow4j-starter)) and Spring AI's Mistral starter:
 
 === "Maven"
 
     ```xml
-    <repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
-
     <!-- AF4J -->
     <dependency>
-        <groupId>com.github.datallmhub.agentflow4j</groupId>
+        <groupId>io.github.datallmhub</groupId>
         <artifactId>agentflow4j-starter</artifactId>
-        <version>v1.0.0</version>
+        <version>1.0.0</version>
     </dependency>
 
     <!-- Spring AI — Mistral -->
@@ -62,10 +55,8 @@ In a Spring Boot project, add the AF4J starter (via [JitPack](https://jitpack.io
 === "Gradle"
 
     ```groovy
-    repositories { maven { url 'https://jitpack.io' } }
-
     dependencies {
-        implementation 'com.github.datallmhub.agentflow4j:agentflow4j-starter:v1.0.0'
+        implementation 'io.github.datallmhub:agentflow4j-starter:1.0.0'
         implementation 'org.springframework.ai:spring-ai-starter-model-mistral-ai'
     }
     ```

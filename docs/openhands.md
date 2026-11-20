@@ -4,9 +4,9 @@
 
 ```xml
 <dependency>
-    <groupId>com.github.datallmhub.agentflow4j</groupId>
+    <groupId>io.github.datallmhub</groupId>
     <artifactId>agentflow4j-openhands</artifactId>
-    <version>v1.0.0</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
