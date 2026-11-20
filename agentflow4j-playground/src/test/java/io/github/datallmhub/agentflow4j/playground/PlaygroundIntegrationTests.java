@@ -79,8 +79,9 @@ class PlaygroundIntegrationTests {
             String payload = readSse(port, "streamer", "hi");
             assertThat(payload)
                     .contains("event:token")
-                    .contains("data:hello ")
-                    .contains("data:world")
+                    // Spring Framework 7 writes a space after the colon; SSE clients ignore it.
+                    .containsPattern("data: ?hello ")
+                    .containsPattern("data: ?world")
                     .contains("event:completed");
         }
     }

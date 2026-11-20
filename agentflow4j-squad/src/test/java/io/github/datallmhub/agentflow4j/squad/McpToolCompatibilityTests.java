@@ -58,6 +58,7 @@ class McpToolCompatibilityTests {
                 Map.of("orderId", Map.of("type", "string")), List.of("orderId"), null, null, null);
         mcpClient = mock(McpSyncClient.class);
         when(mcpClient.getClientInfo()).thenReturn(new McpSchema.Implementation(CLIENT, "1.0"));
+        when(mcpClient.getClientCapabilities()).thenReturn(McpSchema.ClientCapabilities.builder().build());
         when(mcpClient.listTools()).thenReturn(new McpSchema.ListToolsResult(List.of(
                 McpSchema.Tool.builder().name("lookup_order").description("Find an order").inputSchema(schema).build(),
                 McpSchema.Tool.builder().name("refund_order").description("Refund an order").inputSchema(schema).build()),
@@ -167,6 +168,11 @@ class McpToolCompatibilityTests {
         @Override
         public ChatOptions getDefaultOptions() {
             return ToolCallingChatOptions.builder().build();
+        }
+
+        // Spring AI 2 reads the model options through this method; it does not exist on 1.x, hence no @Override.
+        public ChatOptions getOptions() {
+            return getDefaultOptions();
         }
 
         @Override
