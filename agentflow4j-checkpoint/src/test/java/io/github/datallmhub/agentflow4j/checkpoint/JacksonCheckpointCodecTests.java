@@ -32,10 +32,10 @@ class JacksonCheckpointCodecTests {
                 .withMessages(List.of(
                         new SystemMessage("you are helpful"),
                         new UserMessage("hello"),
-                        new AssistantMessage("hi", Map.of(), List.of(
+                        SpringAiMessages.assistant("hi", Map.of(), List.of(
                                 new AssistantMessage.ToolCall("t1", "function", "search", "{\"q\":\"x\"}"))),
-                        new ToolResponseMessage(List.of(
-                                new ToolResponseMessage.ToolResponse("t1", "search", "\"ok\"")))))
+                        SpringAiMessages.toolResponse(List.of(
+                                new ToolResponseMessage.ToolResponse("t1", "search", "\"ok\"")), Map.of())))
                 .with(REPORT, new Report("security", 7));
 
         Checkpoint original = new Checkpoint("run-1", "next", ctx, 3,

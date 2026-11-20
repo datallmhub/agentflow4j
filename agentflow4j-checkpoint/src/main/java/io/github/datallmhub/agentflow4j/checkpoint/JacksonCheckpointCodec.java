@@ -159,7 +159,7 @@ public final class JacksonCheckpointCodec implements CheckpointCodec {
                         calls.add(new AssistantMessage.ToolCall(tc.id(), "function", tc.name(), tc.arguments()));
                     }
                 }
-                yield new AssistantMessage(text, metadata, calls);
+                yield SpringAiMessages.assistant(text, metadata, calls);
             }
             case TOOL -> {
                 List<ToolResponseMessage.ToolResponse> responses = new ArrayList<>();
@@ -168,7 +168,7 @@ public final class JacksonCheckpointCodec implements CheckpointCodec {
                         responses.add(new ToolResponseMessage.ToolResponse(tc.id(), tc.name(), tc.arguments()));
                     }
                 }
-                yield new ToolResponseMessage(responses, metadata);
+                yield SpringAiMessages.toolResponse(responses, metadata);
             }
         };
     }
