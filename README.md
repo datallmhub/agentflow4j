@@ -128,6 +128,7 @@ Available on Maven Central. See [Getting started](docs/getting-started.md) for G
 - [Run log](docs/run-log.md): structured, replayable execution timeline per run
 - [Streaming](docs/streaming.md): `Flux<AgentEvent>` tokens, transitions, tool calls
 - [Testing without an LLM](docs/testing.md): `MockAgent` + `TestGraph`
+- [Validation](docs/validation.md): every guarantee, the test behind it, and what that test does not prove
 - [Samples](docs/samples.md): runnable examples shipped with the repo
 - Migration guides: [0.7 to 0.8](docs/migration-0.8.md), [0.8 to 0.9](docs/migration-0.9.md)
 
