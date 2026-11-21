@@ -127,4 +127,13 @@ class JdbcCheckpointStoreTests {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Illegal table name");
     }
+
+    @Test
+    void payloadColumnUsesATypeTheDatabaseHas() {
+        assertThat(JdbcCheckpointStore.payloadColumnType("PostgreSQL")).isEqualTo("TEXT");
+        assertThat(JdbcCheckpointStore.payloadColumnType("MySQL")).isEqualTo("LONGTEXT");
+        assertThat(JdbcCheckpointStore.payloadColumnType("MariaDB")).isEqualTo("LONGTEXT");
+        assertThat(JdbcCheckpointStore.payloadColumnType("H2")).isEqualTo("CLOB");
+        assertThat(JdbcCheckpointStore.payloadColumnType(null)).isEqualTo("CLOB");
+    }
 }
