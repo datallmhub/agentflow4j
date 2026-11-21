@@ -37,3 +37,29 @@ jobs:
           name: jacoco-reports
           path: '**/target/site/jacoco/'
           if-no-files-found: ignore
+
+  # The published modules must keep building on the newer Spring AI lines.
+  # The samples are left out: they call provider APIs that differ between lines.
+  spring-ai-compat:
+    name: ${{ matrix.line }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - line: Spring AI 1.1
+            versions: -Dspring-ai.version=1.1.8
+          - line: Spring AI 2.1 on Spring Boot 4.2
+            versions: -Dspring-boot.version=4.2.0 -Dspring-ai.version=2.1.0 -Dtomcat.version=11.0.27 -Dmcp.version=2.2.0
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build and test the published modules
+        run: mvn -B verify -pl '!agentflow4j-samples' ${{ matrix.versions }}
