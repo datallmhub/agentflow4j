@@ -74,6 +74,7 @@ Runs `SupportTriageDemo`: a governed multi-agent workflow with `ToolPolicy` and 
 - **Ready to code?** Follow the [Getting started](getting-started.md) guide.
 - **Want runnable examples?** The [Cookbook](https://github.com/datallmhub/agentflow4j-cookbook) has eleven self-contained Java recipes.
 - **Building for production?** [Durable runs](recipes/durable-runs.md) shows how to survive a mid-workflow crash.
+- **Want proof?** [Validation](validation.md) lists every guarantee with the test behind it, and what that test does not prove.
 - **Worried about cost?** [Stop your agent burning $1000 overnight](tutorials/stop-your-agent-burning-money.md) walks through every governance gate.
 
 ---

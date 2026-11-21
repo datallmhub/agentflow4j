@@ -103,6 +103,7 @@ nav:
       - "LLM cost control for Java agents — BudgetPolicy": tutorials/llm-cost-control-java-budget-policy.md
       - "Checkpoint and resume agent workflows in Spring Boot": tutorials/checkpoint-resume-agent-spring-boot.md
   - Testing: testing.md
+  - Validation: validation.md
   - "Migrating to 0.8": migration-0.8.md
   - "Migrating to 0.9": migration-0.9.md
   - Samples: samples.md
