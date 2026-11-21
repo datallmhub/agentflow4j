@@ -56,7 +56,7 @@ AgentResult result = graph.invoke(AgentContext.of("Process this refund request")
 
 `ToolPolicy` restricts which tools the agent can call. `BudgetPolicy` caps spend at $0.50 per run. `ApprovalGate` pauses execution until a human approves. `CheckpointStore` persists graph state: `graph.resume("refund-4521", ResumeOptions.ofApproval("analyse"))` continues the run after the approval, or after a restart.
 
-⭐ **Useful? [Star AF4J on GitHub](https://github.com/datallmhub/agentflow4j).** It takes one click, and it is how other Java teams find the project.
+⭐ **Useful? [Star AF4J on GitHub](https://github.com/datallmhub/agentflow4j/stargazers).** It takes one click, and it is how other Java teams find the project.
 
 ---
 
