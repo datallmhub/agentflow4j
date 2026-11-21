@@ -102,7 +102,7 @@ Since **1.0** the public API of `agentflow4j-core`, `agentflow4j-graph`, `agentf
 <dependency>
     <groupId>io.github.datallmhub</groupId>
     <artifactId>agentflow4j-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 
