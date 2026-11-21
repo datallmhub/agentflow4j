@@ -22,6 +22,7 @@ Human approvals · Checkpoints · Budget controls · Tool policies · Durable ex
 <img width="1536" height="768" alt="AF4J: Build · Govern · Run" src="docs/images/hero.jpg" />
 </p>
 
+[![GitHub stars](https://img.shields.io/github/stars/datallmhub/agentflow4j?style=social)](https://github.com/datallmhub/agentflow4j/stargazers)
 [![build](https://github.com/datallmhub/agentflow4j/actions/workflows/build.yml/badge.svg)](https://github.com/datallmhub/agentflow4j/actions)
 [![Java 17+](https://img.shields.io/badge/Java-17%2B-blue)](https://adoptium.net/)
 [![Spring AI](https://img.shields.io/badge/Spring%20AI-1.0-green)](https://docs.spring.io/spring-ai/reference/)
@@ -55,7 +56,7 @@ AgentResult result = graph.invoke(AgentContext.of("Process this refund request")
 
 `ToolPolicy` restricts which tools the agent can call. `BudgetPolicy` caps spend at $0.50 per run. `ApprovalGate` pauses execution until a human approves. `CheckpointStore` persists graph state: `graph.resume("refund-4521", ResumeOptions.ofApproval("analyse"))` continues the run after the approval, or after a restart.
 
-⭐ **If this saves you time, consider [starring the repo](https://github.com/datallmhub/agentflow4j).**
+⭐ **Useful? [Star AF4J on GitHub](https://github.com/datallmhub/agentflow4j).** It takes one click, and it is how other Java teams find the project.
 
 ---
 
@@ -156,5 +157,6 @@ Available on Maven Central. See [Getting started](docs/getting-started.md) for G
 
 ## 🤝 Contributing & License
 
-Contributions welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
+The simplest contribution is a ⭐ on [the repository](https://github.com/datallmhub/agentflow4j): it tells us the project is worth pushing further. Issues, ideas and pull requests are welcome too: see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 Released under the [Apache 2.0 License](LICENSE). Not an official Spring project.
