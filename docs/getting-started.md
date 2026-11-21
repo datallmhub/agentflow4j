@@ -24,7 +24,7 @@ AF4J is published on [Maven Central](https://central.sonatype.com/artifact/io.gi
     <dependency>
         <groupId>io.github.datallmhub</groupId>
         <artifactId>agentflow4j-starter</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
     </dependency>
     ```
 
@@ -32,7 +32,7 @@ AF4J is published on [Maven Central](https://central.sonatype.com/artifact/io.gi
 
     ```groovy
     dependencies {
-        implementation 'io.github.datallmhub:agentflow4j-starter:1.0.0'
+        implementation 'io.github.datallmhub:agentflow4j-starter:1.0.1'
     }
     ```
 
