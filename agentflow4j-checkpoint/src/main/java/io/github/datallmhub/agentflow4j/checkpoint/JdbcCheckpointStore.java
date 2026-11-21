@@ -3,12 +3,15 @@ package io.github.datallmhub.agentflow4j.checkpoint;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 
 import io.github.datallmhub.agentflow4j.graph.Checkpoint;
 import io.github.datallmhub.agentflow4j.graph.CheckpointStore;
+import org.jspecify.annotations.Nullable;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -44,10 +47,32 @@ public final class JdbcCheckpointStore implements CheckpointStore {
     public void createTableIfMissing() {
         jdbc.execute("CREATE TABLE IF NOT EXISTS " + table + " ("
                 + "run_id VARCHAR(128) PRIMARY KEY,"
-                + "payload CLOB NOT NULL,"
+                + "payload " + payloadColumnType(databaseProductName()) + " NOT NULL,"
                 + "checkpoint_version INT NOT NULL,"
                 + "created_at TIMESTAMP NOT NULL,"
                 + "updated_at TIMESTAMP NOT NULL)");
+    }
+
+    @Nullable
+    private String databaseProductName() {
+        return jdbc.execute((ConnectionCallback<String>) connection ->
+                connection.getMetaData().getDatabaseProductName());
+    }
+
+    /**
+     * {@code CLOB} is the standard type, but PostgreSQL and MySQL do not have
+     * it, and MySQL's {@code TEXT} stops at 64 KB, which a long conversation
+     * exceeds.
+     */
+    static String payloadColumnType(@Nullable String databaseProductName) {
+        String product = databaseProductName == null ? "" : databaseProductName.toLowerCase(Locale.ROOT);
+        if (product.contains("postgresql")) {
+            return "TEXT";
+        }
+        if (product.contains("mysql") || product.contains("mariadb")) {
+            return "LONGTEXT";
+        }
+        return "CLOB";
     }
 
     @Override
