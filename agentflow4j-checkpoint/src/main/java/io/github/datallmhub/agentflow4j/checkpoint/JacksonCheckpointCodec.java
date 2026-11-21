@@ -144,11 +144,20 @@ public final class JacksonCheckpointCodec implements CheckpointCodec {
         return new MessageDto(MessageDto.CURRENT_VERSION, role, text, toolCalls, metadata);
     }
 
+    private static MessageType messageType(String role) {
+        for (MessageType type : MessageType.values()) {
+            if (type.getValue().equals(role)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Invalid MessageType value: " + role);
+    }
+
     private static Message fromMessageDto(MessageDto dto) {
         String role = dto.role() == null ? MessageType.USER.getValue() : dto.role();
         String text = dto.text() == null ? "" : dto.text();
         Map<String, Object> metadata = dto.metadata() == null ? Map.of() : dto.metadata();
-        MessageType type = MessageType.fromValue(role);
+        MessageType type = messageType(role);
         return switch (type) {
             case USER -> new UserMessage(text);
             case SYSTEM -> new SystemMessage(text);
@@ -159,7 +168,7 @@ public final class JacksonCheckpointCodec implements CheckpointCodec {
                         calls.add(new AssistantMessage.ToolCall(tc.id(), "function", tc.name(), tc.arguments()));
                     }
                 }
-                yield new AssistantMessage(text, metadata, calls);
+                yield SpringAiMessages.assistant(text, metadata, calls);
             }
             case TOOL -> {
                 List<ToolResponseMessage.ToolResponse> responses = new ArrayList<>();
@@ -168,7 +177,7 @@ public final class JacksonCheckpointCodec implements CheckpointCodec {
                         responses.add(new ToolResponseMessage.ToolResponse(tc.id(), tc.name(), tc.arguments()));
                     }
                 }
-                yield new ToolResponseMessage(responses, metadata);
+                yield SpringAiMessages.toolResponse(responses, metadata);
             }
         };
     }

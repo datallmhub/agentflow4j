@@ -3,7 +3,6 @@ package io.github.datallmhub.agentflow4j.squad;
 import java.util.Map;
 import java.util.Objects;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import io.github.datallmhub.agentflow4j.core.ToolCallRecord;
 import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.ToolCallback;
@@ -14,8 +13,6 @@ import org.springframework.ai.util.json.JsonParser;
 import org.jspecify.annotations.Nullable;
 
 final class RecordingToolCallback implements ToolCallback {
-
-    private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {};
 
     private final ToolCallback delegate;
     private final ToolCallCollector collector;
@@ -71,7 +68,8 @@ final class RecordingToolCallback implements ToolCallback {
             return Map.of();
         }
         try {
-            Map<String, Object> parsed = JsonParser.getObjectMapper().readValue(input, MAP_TYPE);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> parsed = JsonParser.fromJson(input, Map.class);
             return parsed == null ? Map.of() : parsed;
         } catch (Exception ex) {
             return Map.of("_raw", input);
