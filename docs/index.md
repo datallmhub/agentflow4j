@@ -47,7 +47,7 @@ AF4J is on [Maven Central](https://central.sonatype.com/artifact/io.github.datal
 <dependency>
     <groupId>io.github.datallmhub</groupId>
     <artifactId>agentflow4j-starter</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 

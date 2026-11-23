@@ -42,7 +42,7 @@ In a Spring Boot project, add the AF4J starter (from [Maven Central](https://cen
     <dependency>
         <groupId>io.github.datallmhub</groupId>
         <artifactId>agentflow4j-starter</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.2</version>
     </dependency>
 
     <!-- Spring AI — Mistral -->
@@ -56,7 +56,7 @@ In a Spring Boot project, add the AF4J starter (from [Maven Central](https://cen
 
     ```groovy
     dependencies {
-        implementation 'io.github.datallmhub:agentflow4j-starter:1.0.1'
+        implementation 'io.github.datallmhub:agentflow4j-starter:1.0.2'
         implementation 'org.springframework.ai:spring-ai-starter-model-mistral-ai'
     }
     ```
